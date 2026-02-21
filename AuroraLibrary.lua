@@ -92,8 +92,24 @@ function Utilities:Tween(instance, properties, duration, easingStyle, easingDire
 end
 
 function Utilities:CreateGradient(colors, rotation)
+    -- Convert Color3 array to ColorSequenceKeypoints
+    local keypoints = {}
+    
+    if type(colors) == "table" then
+        for i, color in ipairs(colors) do
+            local time = (i - 1) / (#colors - 1)
+            table.insert(keypoints, ColorSequenceKeypoint.new(time, color))
+        end
+    else
+        -- If single Color3, create simple gradient
+        return self:Create("UIGradient", {
+            Color = ColorSequence.new(colors),
+            Rotation = rotation or 90
+        })
+    end
+    
     return self:Create("UIGradient", {
-        Color = ColorSequence.new(colors),
+        Color = ColorSequence.new(keypoints),
         Rotation = rotation or 90
     })
 end
