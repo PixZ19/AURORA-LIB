@@ -423,7 +423,7 @@ function Aurora:CreateWindow(options)
     -- Tab container
     local tabContainer = Create("ScrollingFrame", sidebar, {
         Name = "TabContainer",
-        Size = UDim2.new(1, 0, 1, -IS_MOBILE and 60 or 115),
+        Size = UDim2.new(1, 0, 1, IS_MOBILE and -60 or -115),
         Position = UDim2.new(0, 0, 0, IS_MOBILE and 55 or 60),
         BackgroundTransparency = 1,
         ScrollBarThickness = 0,
@@ -1483,7 +1483,7 @@ function Aurora.Components.PlayerInfo(section)
     Stroke(avatar, Theme.Secondary, 1.5)
 
     local infoFrame = Create("Frame", container, {
-        Size = UDim2.new(1, -IS_MOBILE and 65 or 60, 1, 0),
+        Size = UDim2.new(1, IS_MOBILE and -65 or -60, 1, 0),
         Position = UDim2.new(0, IS_MOBILE and 60 or 55, 0, 0),
         BackgroundTransparency = 1
     })
