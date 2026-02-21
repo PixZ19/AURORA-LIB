@@ -148,7 +148,11 @@ function Aurora.LoadingScreen(config)
     
     task.spawn(function()
         while screen and screen.Parent do
-            for r = 0, 360, 2 do grad.Rotation = r; task.wait(0.02) end
+            for r = 0, 360, 2 do
+                if not screen or not screen.Parent then break end
+                grad.Rotation = r
+                task.wait(0.02)
+            end
         end
     end)
     
@@ -233,22 +237,37 @@ function Aurora.LoadingScreen(config)
     })
     
     local statuses = {"Initializing...", "Loading Components...", "Setting Up Interface...", "Configuring Theme...", "Preparing UI...", "Almost Ready...", "Welcome!"}
+    local stepDuration = duration / #statuses
     
     task.spawn(function()
+        local progress = 0
         for i, status in ipairs(statuses) do
             statusText.Text = status
-            local target = (i / #statuses) * 100
-            while tonumber(percentText.Text:match("%d+")) < target do
-                local current = tonumber(percentText.Text:match("%d+")) + 1
-                percentText.Text = math.min(current, target) .. "%"
-                progressFill.Size = UDim2.new(math.min(current, target) / 100, 0, 1, 0)
-                task.wait(duration / 100)
+            local targetProgress = (i / #statuses) * 100
+            
+            -- Smooth progress to target
+            local steps = 10
+            local progressStep = (targetProgress - progress) / steps
+            for j = 1, steps do
+                progress = progress + progressStep
+                percentText.Text = math.floor(progress) .. "%"
+                progressFill.Size = UDim2.new(progress / 100, 0, 1, 0)
+                task.wait(stepDuration / steps)
             end
-            task.wait(0.15)
+            
+            progress = targetProgress
+            percentText.Text = math.floor(progress) .. "%"
+            progressFill.Size = UDim2.new(progress / 100, 0, 1, 0)
         end
+        
         task.wait(0.3)
-        Tween(bg, {BackgroundTransparency = 1}, 0.5)
-        task.wait(0.5)
+        
+        -- Fade out
+        for i = 0, 1, 0.05 do
+            bg.BackgroundTransparency = i
+            task.wait(0.02)
+        end
+        
         screen:Destroy()
         onComplete()
     end)
