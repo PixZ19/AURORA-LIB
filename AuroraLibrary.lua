@@ -1,26 +1,3 @@
---[[
-    ╔══════════════════════════════════════════════════════════════╗
-    ║                                                              ║
-    ║     █████╗ ██████╗ ██████╗ ██╗   ██╗██████╗ ██████╗ ███████╗ ║
-    ║    ██╔══██╗██╔══██╗██╔══██╗██║   ██║██╔══██╗██╔══██╗██╔════╝ ║
-    ║    ███████║██████╔╝██████╔╝██║   ██║██████╔╝██████╔╝█████╗   ║
-    ║    ██╔══██║██╔══██╗██╔══██╗██║   ██║██╔═══╝ ██╔═══╝ ██╔══╝   ║
-    ║    ██║  ██║██║  ██║██║  ██║╚██████╔╝██║     ██║     ███████╗ ║
-    ║    ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝     ╚══════╝ ║
-    ║                         LIBRARY                              ║
-    ║                                                              ║
-    ║            Modern • Futuristic • Glassmorphism              ║
-    ║                                                              ║
-    ║                    FOR LEARNING PURPOSE                      ║
-    ╚══════════════════════════════════════════════════════════════╝
-
-    Author: Aurora Development Team
-    Version: 1.0.0
-    Description: A modern, futuristic UI library for Roblox with
-                 glassmorphism design and smooth animations.
-]]
-
--- Services
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
