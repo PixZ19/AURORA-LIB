@@ -1,3 +1,9 @@
+--[[
+    AURORA LIBRARY - Premium UI Framework
+    Version: 2.0.0
+    For Learning Purposes Only
+]]--
+
 -- Services
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -5,1079 +11,644 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 
--- Constants & Configuration
+-- Aurora Library
 local Aurora = {}
-
-Aurora.Version = "1.0.0"
+Aurora.Version = "2.0.0"
 Aurora.Name = "Aurora Library"
 
--- Theme Configuration (Premium Dark Theme with Aurora Borealis Accents)
+-- Theme - Clean Minimalist Dark
 Aurora.Theme = {
-    -- Background Colors
-    Background = Color3.fromRGB(15, 15, 25),
-    BackgroundSecondary = Color3.fromRGB(20, 20, 35),
-    BackgroundTertiary = Color3.fromRGB(25, 25, 45),
-    BackgroundAccent = Color3.fromRGB(30, 30, 55),
+    -- Backgrounds
+    BgMain = Color3.fromRGB(12, 12, 16),
+    BgCard = Color3.fromRGB(18, 18, 24),
+    BgPanel = Color3.fromRGB(22, 22, 30),
+    BgInput = Color3.fromRGB(28, 28, 38),
+    BgHover = Color3.fromRGB(35, 35, 48),
     
-    -- Accent Colors (Aurora Borealis Gradient)
-    Accent = Color3.fromRGB(138, 43, 226),         -- Purple
-    AccentSecondary = Color3.fromRGB(0, 206, 209), -- Cyan
-    AccentTertiary = Color3.fromRGB(255, 20, 147), -- Pink
-    AccentSuccess = Color3.fromRGB(0, 255, 127),   -- Green
-    AccentWarning = Color3.fromRGB(255, 165, 0),   -- Orange
-    AccentDanger = Color3.fromRGB(255, 69, 58),    -- Red
+    -- Accents
+    Accent = Color3.fromRGB(124, 77, 255),
+    AccentLight = Color3.fromRGB(150, 110, 255),
+    AccentDark = Color3.fromRGB(90, 50, 200),
+    Cyan = Color3.fromRGB(80, 200, 255),
+    Green = Color3.fromRGB(80, 220, 140),
+    Orange = Color3.fromRGB(255, 160, 60),
+    Red = Color3.fromRGB(255, 85, 85),
     
-    -- Text Colors
-    TextPrimary = Color3.fromRGB(255, 255, 255),
-    TextSecondary = Color3.fromRGB(180, 180, 200),
-    TextMuted = Color3.fromRGB(120, 120, 150),
+    -- Text
+    TextMain = Color3.fromRGB(240, 240, 245),
+    TextSub = Color3.fromRGB(160, 160, 175),
+    TextMuted = Color3.fromRGB(100, 100, 120),
     
-    -- UI Elements
-    Border = Color3.fromRGB(60, 60, 90),
-    BorderLight = Color3.fromRGB(80, 80, 120),
-    Shadow = Color3.fromRGB(0, 0, 0),
+    -- Borders
+    Border = Color3.fromRGB(45, 45, 60),
+    BorderLight = Color3.fromRGB(60, 60, 80),
     
     -- Gradients
-    GradientPrimary = {
-        Color3.fromRGB(138, 43, 226),
-        Color3.fromRGB(75, 0, 130),
-        Color3.fromRGB(0, 206, 209)
-    },
-    GradientAurora = {
-        Color3.fromRGB(0, 206, 209),
-        Color3.fromRGB(138, 43, 226),
-        Color3.fromRGB(255, 20, 147)
+    GradientAccent = {
+        Color3.fromRGB(124, 77, 255),
+        Color3.fromRGB(80, 200, 255)
     }
 }
 
--- Animation Configuration
-Aurora.AnimationConfig = {
-    EasingStyle = Enum.EasingStyle.Quart,
-    EasingDirection = Enum.EasingDirection.Out,
-    DefaultDuration = 0.3,
-    FastDuration = 0.15,
-    SlowDuration = 0.5
+-- Animation Config
+Aurora.Config = {
+    Duration = 0.25,
+    Fast = 0.15,
+    Slow = 0.4,
+    Easing = Enum.EasingStyle.Quart,
+    Direction = Enum.EasingDirection.Out
 }
 
--- Utility Functions
-local Utilities = {}
+-- Utilities
+local Utils = {}
 
-function Utilities:Create(class, properties, children)
-    local instance = Instance.new(class)
-    
-    for prop, value in pairs(properties or {}) do
-        if prop == "Parent" then
-            instance.Parent = value
+function Utils:Instance(class, props)
+    local inst = Instance.new(class)
+    for k, v in pairs(props or {}) do
+        if k == "Parent" then
+            inst.Parent = v
         else
-            instance[prop] = value
+            inst[k] = v
         end
     end
-    
-    for _, child in pairs(children or {}) do
-        child.Parent = instance
-    end
-    
-    return instance
+    return inst
 end
 
-function Utilities:Tween(instance, properties, duration, easingStyle, easingDirection)
-    local tweenInfo = TweenInfo.new(
-        duration or Aurora.AnimationConfig.DefaultDuration,
-        easingStyle or Aurora.AnimationConfig.EasingStyle,
-        easingDirection or Aurora.AnimationConfig.EasingDirection
-    )
-    local tween = TweenService:Create(instance, tweenInfo, properties)
+function Utils:Tween(inst, props, duration)
+    local info = TweenInfo.new(duration or Aurora.Config.Duration, Aurora.Config.Easing, Aurora.Config.Direction)
+    local tween = TweenService:Create(inst, info, props)
     tween:Play()
     return tween
 end
 
-function Utilities:CreateGradient(colors, rotation)
-    -- Convert Color3 array to ColorSequenceKeypoints
+function Utils:Corner(radius)
+    return self:Instance("UICorner", {CornerRadius = UDim.new(0, radius or 8)})
+end
+
+function Utils:Stroke(color, thickness)
+    return self:Instance("UIStroke", {
+        Color = color or Aurora.Theme.Border,
+        Thickness = thickness or 1,
+        Transparency = 0
+    })
+end
+
+function Utils:Padding(left, top, right, bottom)
+    return self:Instance("UIPadding", {
+        PaddingLeft = UDim.new(0, left or 12),
+        PaddingTop = UDim.new(0, top or 12),
+        PaddingRight = UDim.new(0, right or 12),
+        PaddingBottom = UDim.new(0, bottom or 12)
+    })
+end
+
+function Utils:Gradient(colors, rotation)
     local keypoints = {}
-    
-    if type(colors) == "table" then
-        for i, color in ipairs(colors) do
-            local time = (i - 1) / (#colors - 1)
-            table.insert(keypoints, ColorSequenceKeypoint.new(time, color))
-        end
-    else
-        -- If single Color3, create simple gradient
-        return self:Create("UIGradient", {
-            Color = ColorSequence.new(colors),
-            Rotation = rotation or 90
-        })
+    for i, color in ipairs(colors) do
+        local t = (i - 1) / math.max(1, #colors - 1)
+        table.insert(keypoints, ColorSequenceKeypoint.new(t, color))
     end
-    
-    return self:Create("UIGradient", {
+    return self:Instance("UIGradient", {
         Color = ColorSequence.new(keypoints),
         Rotation = rotation or 90
     })
 end
 
-function Utilities:CreateCorner(radius)
-    return self:Create("UICorner", {
-        CornerRadius = UDim.new(0, radius or 8)
-    })
-end
-
-function Utilities:CreateStroke(color, thickness, transparency)
-    return self:Create("UIStroke", {
-        Color = color or Aurora.Theme.Border,
-        Thickness = thickness or 1,
-        Transparency = transparency or 0
-    })
-end
-
-function Utilities:CreatePadding(paddingLeft, paddingTop, paddingRight, paddingBottom)
-    return self:Create("UIPadding", {
-        PaddingLeft = UDim.new(0, paddingLeft or 10),
-        PaddingTop = UDim.new(0, paddingTop or 10),
-        PaddingRight = UDim.new(0, paddingRight or 10),
-        PaddingBottom = UDim.new(0, paddingBottom or 10)
-    })
-end
-
-function Utilities:CreateListLayout(fillDirection, padding, horizontalAlignment)
-    return self:Create("UIListLayout", {
-        FillDirection = fillDirection or Enum.FillDirection.Vertical,
-        Padding = UDim.new(0, padding or 8),
-        HorizontalAlignment = horizontalAlignment or Enum.HorizontalAlignment.Left
-    })
-end
-
-function Utilities:CreateFlex(fillDirection, padding)
-    return self:Create("UIFlex", {
-        Mode = Enum.UIFlexMode.Fill,
-        FillDirection = fillDirection or Enum.UIFlexDirection.Horizontal,
-        ItemLineAlignment = Enum.ItemLineAlignment.Center,
-        Gap = UDim.new(0, padding or 10)
-    })
-end
-
-function Utilities:Round(number, decimalPlaces)
-    local multiplier = 10 ^ (decimalPlaces or 0)
-    return math.floor(number * multiplier + 0.5) / multiplier
-end
-
-function Utilities:GetTime()
-    local time = os.date("*t")
-    local hour = time.hour
+function Utils:Time()
+    local t = os.date("*t")
+    local h = t.hour
     local ampm = "AM"
-    
-    if hour >= 12 then
-        ampm = "PM"
-        if hour > 12 then
-            hour = hour - 12
-        end
-    elseif hour == 0 then
-        hour = 12
-    end
-    
-    return string.format("%02d:%02d:%02d %s", hour, time.min, time.sec, ampm)
+    if h >= 12 then ampm = "PM"; if h > 12 then h = h - 12 end end
+    if h == 0 then h = 12 end
+    return string.format("%02d:%02d:%02d %s", h, t.min, t.sec, ampm)
 end
 
-function Utilities:GetDate()
+function Utils:Date()
     return os.date("%d/%m/%Y")
 end
 
-function Utilities:GetUserInfo()
-    local player = Players.LocalPlayer
-    return {
-        Username = player.Name,
-        DisplayName = player.DisplayName,
-        UserId = player.UserId,
-        AccountAge = player.AccountAge,
-        AccountAgeDays = math.floor(player.AccountAge / 86400),
-        Membership = player.MembershipType.Name,
-        CharacterAppearanceId = player.CharacterAppearanceId
-    }
-end
-
-function Utilities:GetExecutorInfo()
-    local executorInfo = {
-        Name = "Unknown",
-        Version = "Unknown",
-        Capabilities = {}
-    }
-    
-    -- Detect executor
-    if identifyexecutor then
-        local name, version = identifyexecutor()
-        executorInfo.Name = name or "Unknown"
-        executorInfo.Version = version or "Unknown"
-    end
-    
-    -- Check capabilities
-    local capabilities = {
-        {Name = "Drawing", Check = function() return Drawing ~= nil end},
-        {Name = "getgenv", Check = function() return getgenv ~= nil end},
-        {Name = "getrenv", Check = function() return getrenv ~= nil end},
-        {Name = "getgc", Check = function() return getgc ~= nil end},
-        {Name = "getinstances", Check = function() return getinstances ~= nil end},
-        {Name = "getnilinstances", Check = function() return getnilinstances ~= nil end},
-        {Name = "firesignal", Check = function() return firesignal ~= nil end},
-        {Name = "hookfunction", Check = function() return hookfunction ~= nil end},
-        {Name = "syn", Check = function() return syn ~= nil end},
-        {Name = "queueonteleport", Check = function() return queueonteleport ~= nil end}
-    }
-    
-    for _, cap in pairs(capabilities) do
-        local success, result = pcall(cap.Check)
-        if success and result then
-            table.insert(executorInfo.Capabilities, cap.Name)
-        end
-    end
-    
-    return executorInfo
-end
-
--- Animation Functions
-local Animations = {}
-
-function Animations:Pulse(instance, scale, duration)
-    local originalSize = instance.Size
-    local tween1 = Utilities:Tween(instance, {Size = originalSize + UDim2.new(0, scale, 0, scale)}, duration / 2)
-    tween1.Completed:Connect(function()
-        Utilities:Tween(instance, {Size = originalSize}, duration / 2)
+function Utils:ExecutorInfo()
+    local info = {Name = "Unknown", Version = "Unknown", Caps = {}}
+    local ok, name, ver = pcall(function()
+        if identifyexecutor then return identifyexecutor() end
+        return nil, nil
     end)
-end
-
-function Animations:FadeIn(instance, duration)
-    instance.Transparency = 1
-    Utilities:Tween(instance, {Transparency = 0}, duration or 0.3)
-end
-
-function Animations:FadeOut(instance, duration, callback)
-    local tween = Utilities:Tween(instance, {Transparency = 1}, duration or 0.3)
-    if callback then
-        tween.Completed:Connect(callback)
+    if ok and name then info.Name = name; info.Version = ver or "Unknown" end
+    
+    local caps = {"Drawing", "getgenv", "getrenv", "getgc", "hookfunction", "firesignal", "syn", "queueonteleport"}
+    for _, cap in ipairs(caps) do
+        local success = pcall(function()
+            return _G[cap] or getfenv()[cap]
+        end)
+        if success then table.insert(info.Caps, cap) end
     end
-end
-
-function Animations:SlideIn(instance, direction, distance, duration)
-    local originalPosition = instance.Position
-    local startPosition = originalPosition
-    
-    if direction == "Left" then
-        startPosition = UDim2.new(originalPosition.X.Scale, originalPosition.X.Offset - distance, originalPosition.Y.Scale, originalPosition.Y.Offset)
-    elseif direction == "Right" then
-        startPosition = UDim2.new(originalPosition.X.Scale, originalPosition.X.Offset + distance, originalPosition.Y.Scale, originalPosition.Y.Offset)
-    elseif direction == "Top" then
-        startPosition = UDim2.new(originalPosition.X.Scale, originalPosition.X.Offset, originalPosition.Y.Scale, originalPosition.Y.Offset - distance)
-    elseif direction == "Bottom" then
-        startPosition = UDim2.new(originalPosition.X.Scale, originalPosition.X.Offset, originalPosition.Y.Scale, originalPosition.Y.Offset + distance)
-    end
-    
-    instance.Position = startPosition
-    Utilities:Tween(instance, {Position = originalPosition}, duration or 0.4)
-end
-
-function Animations:Glow(instance, color, duration, loops)
-    local stroke = instance:FindFirstChildOfClass("UIStroke") or Utilities:CreateStroke(color, 2, 1)
-    stroke.Parent = instance
-    
-    spawn(function()
-        local loopCount = 0
-        while loops == -1 or loopCount < (loops or 1) do
-            Utilities:Tween(stroke, {Transparency = 0}, duration / 2)
-            wait(duration / 2)
-            Utilities:Tween(stroke, {Transparency = 1}, duration / 2)
-            wait(duration / 2)
-            loopCount = loopCount + 1
-        end
-    end)
-end
-
-function Animations:Typewriter(textLabel, text, speed)
-    textLabel.Text = ""
-    for i = 1, #text do
-        textLabel.Text = string.sub(text, 1, i)
-        wait(speed or 0.03)
-    end
-end
-
-function Animations:Shake(instance, intensity, duration)
-    local originalPosition = instance.Position
-    local elapsed = 0
-    
-    spawn(function()
-        while elapsed < duration do
-            local offsetX = math.random(-intensity, intensity)
-            local offsetY = math.random(-intensity, intensity)
-            instance.Position = UDim2.new(originalPosition.X.Scale, originalPosition.X.Offset + offsetX, originalPosition.Y.Scale, originalPosition.Y.Offset + offsetY)
-            wait(0.02)
-            elapsed = elapsed + 0.02
-        end
-        instance.Position = originalPosition
-    end)
+    return info
 end
 
 -- Ripple Effect
-function Animations:Ripple(button, x, y, color)
-    local ripple = Utilities:Create("Frame", {
+function Utils:Ripple(btn, x, y)
+    local ripple = self:Instance("Frame", {
         Name = "Ripple",
-        BackgroundColor3 = color or Color3.new(1, 1, 1),
-        BackgroundTransparency = 0.8,
+        BackgroundColor3 = Color3.new(1, 1, 1),
+        BackgroundTransparency = 0.7,
         Size = UDim2.new(0, 0, 0, 0),
         Position = UDim2.new(0, x, 0, y),
         AnchorPoint = Vector2.new(0.5, 0.5),
-        Parent = button
-    }, {
-        Utilities:CreateCorner(100)
+        Parent = btn
     })
+    self:Corner(100).Parent = ripple
     
-    local maxSize = math.max(button.AbsoluteSize.X, button.AbsoluteSize.Y) * 2
-    
-    Utilities:Tween(ripple, {Size = UDim2.new(0, maxSize, 0, maxSize), BackgroundTransparency = 1}, 0.5)
-    
-    delay(0.5, function()
-        ripple:Destroy()
-    end)
+    local size = math.max(btn.AbsoluteSize.X, btn.AbsoluteSize.Y) * 2.5
+    self:Tween(ripple, {Size = UDim2.new(0, size, 0, size), BackgroundTransparency = 1}, 0.5)
+    task.delay(0.5, function() ripple:Destroy() end)
 end
 
--- Loading Screen System
-local LoadingScreen = {}
-LoadingScreen.__index = LoadingScreen
-
-function Aurora:CreateLoadingScreen(config)
+-- Loading Screen
+function Aurora:LoadingScreen(config)
     config = config or {}
+    local duration = config.Duration or 3
+    local onComplete = config.OnComplete or function() end
     
-    local loadingScreen = {
-        Title = config.Title or "Aurora Library",
-        Subtitle = config.Subtitle or "Loading...",
-        Logo = config.Logo or "AURORA",
-        Duration = config.Duration or 3,
-        BackgroundMusic = config.BackgroundMusic,
-        OnComplete = config.OnComplete or function() end,
-        Elements = {}
-    }
-    
-    -- Create ScreenGui
-    local ScreenGui = Utilities:Create("ScreenGui", {
-        Name = "AuroraLoadingScreen",
+    local screen = self:Instance("ScreenGui", {
+        Name = "AuroraLoading",
         IgnoreGuiInset = true,
         ResetOnSpawn = false,
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
         Parent = CoreGui
     })
     
-    loadingScreen.ScreenGui = ScreenGui
-    
     -- Background
-    local Background = Utilities:Create("Frame", {
-        Name = "Background",
+    local bg = self:Instance("Frame", {
         Size = UDim2.new(1, 0, 1, 0),
-        Position = UDim2.new(0, 0, 0, 0),
-        BackgroundColor3 = Aurora.Theme.Background,
-        Parent = ScreenGui
-    }, {
-        Utilities:CreateCorner(0)
+        BackgroundColor3 = Aurora.Theme.BgMain,
+        Parent = screen
     })
+    self:Corner(0).Parent = bg
     
-    -- Animated Background Gradient
-    local BackgroundGradient = Utilities:Create("UIGradient", {
-        Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Aurora.Theme.BackgroundTertiary),
-            ColorSequenceKeypoint.new(0.5, Aurora.Theme.BackgroundSecondary),
-            ColorSequenceKeypoint.new(1, Aurora.Theme.BackgroundTertiary)
-        }),
-        Rotation = 45,
-        Parent = Background
-    })
-    
-    -- Animate background gradient
-    spawn(function()
-        local rotation = 45
-        while ScreenGui and ScreenGui.Parent do
-            rotation = rotation + 0.5
-            if rotation >= 360 then rotation = 0 end
-            BackgroundGradient.Rotation = rotation
-            wait(0.03)
-        end
-    end)
-    
-    -- Particle Effects Container
-    local ParticlesContainer = Utilities:Create("Frame", {
-        Name = "Particles",
+    -- Gradient overlay
+    local gradientBg = self:Instance("Frame", {
         Size = UDim2.new(1, 0, 1, 0),
         BackgroundTransparency = 1,
-        Parent = Background
+        Parent = bg
     })
+    local gradientAnim = self:Gradient(Aurora.Theme.GradientAccent, 135)
+    gradientAnim.Parent = gradientBg
     
-    -- Create floating particles
-    spawn(function()
-        for i = 1, 50 do
-            local particle = Utilities:Create("Frame", {
-                Name = "Particle" .. i,
-                Size = UDim2.new(0, math.random(2, 6), 0, math.random(2, 6)),
-                Position = UDim2.new(math.random(), 0, math.random(), 0),
-                BackgroundColor3 = Aurora.Theme.AccentSecondary,
-                BackgroundTransparency = 0.5 + (math.random() * 0.3),
-                Parent = ParticlesContainer
-            }, {
-                Utilities:CreateCorner(100)
-            })
-            
-            spawn(function()
-                while ScreenGui and ScreenGui.Parent do
-                    local duration = math.random(3, 8)
-                    local startY = math.random()
-                    local endY = math.random()
-                    
-                    particle.Position = UDim2.new(math.random(), 0, startY, 0)
-                    
-                    local tween = Utilities:Tween(particle, {
-                        Position = UDim2.new(math.random(), 0, endY, 0)
-                    }, duration, Enum.EasingStyle.Linear)
-                    
-                    wait(duration)
-                end
-            end)
-            
-            wait(0.1)
+    -- Animate gradient
+    task.spawn(function()
+        while screen and screen.Parent do
+            for r = 0, 360 do
+                gradientAnim.Rotation = r
+                task.wait(0.02)
+            end
         end
     end)
     
-    -- Main Container
-    local MainContainer = Utilities:Create("Frame", {
-        Name = "MainContainer",
-        Size = UDim2.new(0, 500, 0, 400),
+    -- Center container
+    local center = self:Instance("Frame", {
+        Size = UDim2.new(0, 400, 0, 200),
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundTransparency = 1,
-        Parent = Background
+        Parent = bg
     })
     
-    -- Logo Container
-    local LogoContainer = Utilities:Create("Frame", {
-        Name = "LogoContainer",
-        Size = UDim2.new(1, 0, 0, 80),
-        Position = UDim2.new(0, 0, 0, 50),
+    -- Logo text
+    local logo = self:Instance("TextLabel", {
+        Size = UDim2.new(1, 0, 0, 60),
+        Position = UDim2.new(0, 0, 0, 20),
         BackgroundTransparency = 1,
-        Parent = MainContainer
-    })
-    
-    -- Aurora Text Logo with Gradient
-    local LogoText = Utilities:Create("TextLabel", {
-        Name = "Logo",
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundTransparency = 1,
-        Text = loadingScreen.Logo,
+        Text = "AURORA",
         TextColor3 = Color3.new(1, 1, 1),
-        TextSize = 60,
-        Font = Enum.Font.GothamBold,
-        Parent = LogoContainer
-    }, {
-        Utilities:CreateGradient({
-            Color3.fromRGB(0, 206, 209),
-            Color3.fromRGB(138, 43, 226),
-            Color3.fromRGB(255, 20, 147)
-        }, 0)
+        TextSize = 48,
+        Font = Enum.Font.GothamBlack,
+        Parent = center
     })
+    self:Gradient(Aurora.Theme.GradientAccent, 0).Parent = logo
     
-    -- Animated Glow behind logo
-    local LogoGlow = Utilities:Create("ImageLabel", {
-        Name = "Glow",
-        Size = UDim2.new(0, 300, 0, 100),
-        Position = UDim2.new(0.5, 0, 0.5, 0),
-        AnchorPoint = Vector2.new(0.5, 0.5),
+    -- Tagline
+    local tagline = self:Instance("TextLabel", {
+        Size = UDim2.new(1, 0, 0, 24),
+        Position = UDim2.new(0, 0, 0, 75),
         BackgroundTransparency = 1,
-        Image = "rbxassetid://6014261993",
-        ImageColor3 = Aurora.Theme.Accent,
-        ImageTransparency = 0.5,
-        ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(49, 49, 450, 450),
-        Parent = LogoContainer
-    })
-    
-    -- Animate glow
-    spawn(function()
-        local transparency = 0.5
-        local direction = 1
-        while ScreenGui and ScreenGui.Parent do
-            transparency = transparency + (direction * 0.02)
-            if transparency <= 0.3 then direction = 1
-            elseif transparency >= 0.7 then direction = -1 end
-            LogoGlow.ImageTransparency = transparency
-            wait(0.03)
-        end
-    end)
-    
-    -- Subtitle
-    local SubtitleLabel = Utilities:Create("TextLabel", {
-        Name = "Subtitle",
-        Size = UDim2.new(1, 0, 0, 30),
-        Position = UDim2.new(0, 0, 0, 130),
-        BackgroundTransparency = 1,
-        Text = loadingScreen.Subtitle,
-        TextColor3 = Aurora.Theme.TextSecondary,
-        TextSize = 16,
-        Font = Enum.Font.GothamMedium,
-        Parent = MainContainer
-    })
-    
-    -- Loading Bar Container
-    local LoadingBarContainer = Utilities:Create("Frame", {
-        Name = "LoadingBarContainer",
-        Size = UDim2.new(0.8, 0, 0, 8),
-        Position = UDim2.new(0.1, 0, 0, 250),
-        BackgroundColor3 = Aurora.Theme.BackgroundTertiary,
-        Parent = MainContainer
-    }, {
-        Utilities:CreateCorner(4),
-        Utilities:CreateStroke(Aurora.Theme.Border, 1, 0)
-    })
-    
-    -- Loading Bar Fill
-    local LoadingBarFill = Utilities:Create("Frame", {
-        Name = "LoadingBarFill",
-        Size = UDim2.new(0, 0, 1, 0),
-        BackgroundColor3 = Aurora.Theme.Accent,
-        Parent = LoadingBarContainer
-    }, {
-        Utilities:CreateCorner(4),
-        Utilities:CreateGradient({
-            Aurora.Theme.AccentSecondary,
-            Aurora.Theme.Accent,
-            Aurora.Theme.AccentTertiary
-        }, 0)
-    })
-    
-    -- Loading Percentage
-    local PercentageLabel = Utilities:Create("TextLabel", {
-        Name = "Percentage",
-        Size = UDim2.new(1, 0, 0, 20),
-        Position = UDim2.new(0, 0, 0, 265),
-        BackgroundTransparency = 1,
-        Text = "0%",
-        TextColor3 = Aurora.Theme.TextSecondary,
+        Text = config.Subtitle or "Loading...",
+        TextColor3 = Aurora.Theme.TextSub,
         TextSize = 14,
         Font = Enum.Font.GothamMedium,
-        Parent = MainContainer
+        Parent = center
     })
     
-    -- Status Messages
-    local StatusLabel = Utilities:Create("TextLabel", {
-        Name = "Status",
+    -- Progress bar background
+    local progressBg = self:Instance("Frame", {
+        Size = UDim2.new(0.8, 0, 0, 4),
+        Position = UDim2.new(0.1, 0, 0, 130),
+        BackgroundColor3 = Aurora.Theme.BgInput,
+        Parent = center
+    })
+    self:Corner(2).Parent = progressBg
+    
+    -- Progress bar fill
+    local progressFill = self:Instance("Frame", {
+        Size = UDim2.new(0, 0, 1, 0),
+        BackgroundColor3 = Aurora.Theme.Accent,
+        Parent = progressBg
+    })
+    self:Corner(2).Parent = progressFill
+    self:Gradient(Aurora.Theme.GradientAccent, 0).Parent = progressFill
+    
+    -- Percentage text
+    local percentText = self:Instance("TextLabel", {
         Size = UDim2.new(1, 0, 0, 20),
-        Position = UDim2.new(0, 0, 0, 290),
+        Position = UDim2.new(0, 0, 0, 145),
         BackgroundTransparency = 1,
-        Text = "Initializing...",
+        Text = "0%",
         TextColor3 = Aurora.Theme.TextMuted,
         TextSize = 12,
         Font = Enum.Font.Gotham,
-        Parent = MainContainer
+        Parent = center
     })
     
-    -- Animated Spinning Icon
-    local SpinningContainer = Utilities:Create("Frame", {
-        Name = "SpinnerContainer",
-        Size = UDim2.new(0, 50, 0, 50),
-        Position = UDim2.new(0.5, 0, 0, 340),
-        AnchorPoint = Vector2.new(0.5, 0.5),
-        BackgroundTransparency = 1,
-        Parent = MainContainer
-    })
-    
-    local SpinningIcon = Utilities:Create("ImageLabel", {
-        Name = "Spinner",
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundTransparency = 1,
-        Image = "rbxassetid://10886031167",
-        ImageColor3 = Aurora.Theme.AccentSecondary,
-        Parent = SpinningContainer
-    })
-    
-    -- Animate spinner
-    spawn(function()
-        while ScreenGui and ScreenGui.Parent do
-            SpinningIcon.Rotation = SpinningIcon.Rotation + 3
-            wait(0.01)
-        end
-    end)
-    
-    -- Footer
-    local Footer = Utilities:Create("TextLabel", {
-        Name = "Footer",
+    -- Status text
+    local statusText = self:Instance("TextLabel", {
         Size = UDim2.new(1, 0, 0, 20),
-        Position = UDim2.new(0, 0, 1, -30),
-        AnchorPoint = Vector2.new(0, 1),
+        Position = UDim2.new(0, 0, 0, 170),
         BackgroundTransparency = 1,
-        Text = "Aurora Library v" .. Aurora.Version .. " | For Learning Purposes Only",
-        TextColor3 = Aurora.Theme.TextMuted,
+        Text = "Initializing...",
+        TextColor3 = Aurora.Theme.TextSub,
         TextSize = 11,
         Font = Enum.Font.Gotham,
-        Parent = Background
+        Parent = center
     })
     
-    -- Loading Progress Animation
-    local statusMessages = {
-        "Initializing Aurora Library...",
-        "Loading UI Components...",
-        "Setting up Animations...",
+    -- Version footer
+    local footer = self:Instance("TextLabel", {
+        Size = UDim2.new(1, 0, 0, 16),
+        Position = UDim2.new(0, 0, 1, -30),
+        BackgroundTransparency = 1,
+        Text = "Aurora Library v" .. self.Version .. " | Learning Purpose Only",
+        TextColor3 = Aurora.Theme.TextMuted,
+        TextSize = 10,
+        Font = Enum.Font.Gotham,
+        Parent = bg
+    })
+    
+    -- Loading animation
+    local statuses = {
+        "Initializing...",
+        "Loading Components...",
+        "Setting Up Interface...",
         "Configuring Theme...",
-        "Optimizing Performance...",
-        "Preparing Interface...",
+        "Preparing UI...",
         "Almost Ready...",
-        "Welcome to Aurora!"
+        "Welcome!"
     }
     
-    local currentProgress = 0
-    local targetProgress = 0
-    local messageIndex = 1
-    
-    spawn(function()
-        for i = 1, #statusMessages do
-            StatusLabel.Text = statusMessages[i]
-            targetProgress = (i / #statusMessages) * 100
-            
-            while currentProgress < targetProgress do
-                currentProgress = math.min(currentProgress + 1, targetProgress)
-                LoadingBarFill.Size = UDim2.new(currentProgress / 100, 0, 1, 0)
-                PercentageLabel.Text = math.floor(currentProgress) .. "%"
-                wait(loadingScreen.Duration / 100)
+    task.spawn(function()
+        for i, status in ipairs(statuses) do
+            statusText.Text = status
+            local target = (i / #statuses) * 100
+            while tonumber(percentText.Text:match("%d+")) < target do
+                local current = tonumber(percentText.Text:match("%d+")) + 1
+                percentText.Text = math.min(current, target) .. "%"
+                progressFill.Size = UDim2.new(math.min(current, target) / 100, 0, 1, 0)
+                task.wait(duration / 100)
             end
-            
-            wait(0.2)
+            task.wait(0.15)
         end
         
-        wait(0.5)
-        
-        -- Fade out loading screen
-        Utilities:Tween(ScreenGui, {}, 0.5) -- Placeholder
-        Utilities:Tween(Background, {BackgroundTransparency = 1}, 0.5)
-        
-        wait(0.5)
-        
-        ScreenGui:Destroy()
-        loadingScreen.OnComplete()
+        task.wait(0.3)
+        self:Tween(bg, {BackgroundTransparency = 1}, 0.5)
+        task.wait(0.5)
+        screen:Destroy()
+        onComplete()
     end)
     
-    -- Typewriter effect for subtitle
-    spawn(function()
-        while ScreenGui and ScreenGui.Parent do
-            Animations:Typewriter(SubtitleLabel, loadingScreen.Subtitle, 0.05)
-            wait(2)
-        end
-    end)
-    
-    function loadingScreen:Remove()
-        if ScreenGui and ScreenGui.Parent then
-            Utilities:Tween(Background, {BackgroundTransparency = 1}, 0.5)
-            wait(0.5)
-            ScreenGui:Destroy()
-        end
-    end
-    
-    return loadingScreen
+    return screen
 end
 
--- Window System
-local Window = {}
-Window.__index = Window
-
-function Aurora:CreateWindow(config)
+-- Window
+function Aurora:Window(config)
     config = config or {}
     
     local window = {
-        Title = config.Title or "Aurora Library",
-        Subtitle = config.Subtitle or "",
-        Size = config.Size or UDim2.new(0, 680, 0, 450),
-        Position = config.Position or UDim2.new(0.5, 0, 0.5, 0),
-        MinSize = config.MinSize or UDim2.new(0, 400, 0, 300),
-        Theme = config.Theme or Aurora.Theme,
+        Title = config.Title or "Aurora",
+        Size = config.Size or UDim2.new(0, 580, 0, 400),
         Tabs = {},
         CurrentTab = nil,
-        IsOpen = true,
-        IsMinimized = false,
         Dragging = false,
-        DragOffset = Vector2.new(0, 0),
-        Connections = {}
+        DragOffset = Vector2.new()
     }
     
-    -- Create ScreenGui
-    local ScreenGui = Utilities:Create("ScreenGui", {
-        Name = "AuroraWindow_" .. tostring(math.random(100000, 999999)),
+    -- ScreenGui
+    local screen = self:Instance("ScreenGui", {
+        Name = "AuroraWindow",
         IgnoreGuiInset = true,
         ResetOnSpawn = false,
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
         Parent = CoreGui
     })
+    window.Screen = screen
     
-    window.ScreenGui = ScreenGui
-    
-    -- Background Overlay (for click-off detection)
-    local Overlay = Utilities:Create("Frame", {
-        Name = "Overlay",
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundTransparency = 1,
-        Visible = false,
-        Parent = ScreenGui
-    })
-    
-    window.Overlay = Overlay
-    
-    -- Main Window Frame
-    local MainFrame = Utilities:Create("Frame", {
-        Name = "MainFrame",
+    -- Main Frame
+    local main = self:Instance("Frame", {
+        Name = "Main",
         Size = window.Size,
-        Position = window.Position,
+        Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
-        BackgroundColor3 = Aurora.Theme.Background,
-        Parent = ScreenGui
-    }, {
-        Utilities:CreateCorner(12),
-        Utilities:CreateStroke(Aurora.Theme.Border, 1, 0)
+        BackgroundColor3 = Aurora.Theme.BgMain,
+        Parent = screen
     })
+    self:Corner(10).Parent = main
+    self:Stroke(Aurora.Theme.Border).Parent = main
     
-    window.MainFrame = MainFrame
-    
-    -- Shadow Effect
-    local Shadow = Utilities:Create("ImageLabel", {
-        Name = "Shadow",
-        Size = UDim2.new(1, 30, 1, 30),
-        Position = UDim2.new(0, -15, 0, -15),
-        BackgroundTransparency = 1,
-        Image = "rbxassetid://6014261993",
-        ImageColor3 = Color3.new(0, 0, 0),
-        ImageTransparency = 0.5,
-        ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(49, 49, 450, 450),
-        ZIndex = -1,
-        Parent = MainFrame
-    })
-    
-    -- Glow Border Effect
-    local GlowBorder = Utilities:Create("ImageLabel", {
-        Name = "GlowBorder",
-        Size = UDim2.new(1, 8, 1, 8),
-        Position = UDim2.new(0, -4, 0, -4),
+    -- Glow effect
+    local glow = self:Instance("ImageLabel", {
+        Size = UDim2.new(1, 20, 1, 20),
+        Position = UDim2.new(0, -10, 0, -10),
         BackgroundTransparency = 1,
         Image = "rbxassetid://6014261993",
         ImageColor3 = Aurora.Theme.Accent,
-        ImageTransparency = 0.7,
+        ImageTransparency = 0.85,
         ScaleType = Enum.ScaleType.Slice,
         SliceCenter = Rect.new(49, 49, 450, 450),
         ZIndex = -1,
-        Parent = MainFrame
+        Parent = main
     })
     
     -- Animate glow
-    spawn(function()
-        local transparency = 0.7
-        local direction = 1
-        while ScreenGui and ScreenGui.Parent do
-            transparency = transparency + (direction * 0.01)
-            if transparency <= 0.5 then direction = 1
-            elseif transparency >= 0.9 then direction = -1 end
-            GlowBorder.ImageTransparency = transparency
-            wait(0.03)
+    task.spawn(function()
+        local t = 0.85
+        local d = 1
+        while screen and screen.Parent do
+            t = t + d * 0.008
+            if t <= 0.7 then d = 1 elseif t >= 0.95 then d = -1 end
+            glow.ImageTransparency = t
+            task.wait(0.03)
         end
     end)
     
-    -- Title Bar
-    local TitleBar = Utilities:Create("Frame", {
-        Name = "TitleBar",
-        Size = UDim2.new(1, 0, 0, 45),
-        BackgroundColor3 = Aurora.Theme.BackgroundSecondary,
-        Parent = MainFrame
-    }, {
-        Utilities:CreateCorner(12)
+    -- Header
+    local header = self:Instance("Frame", {
+        Name = "Header",
+        Size = UDim2.new(1, 0, 0, 50),
+        BackgroundColor3 = Aurora.Theme.BgCard,
+        Parent = main
     })
+    local headerCorner = self:Corner(10)
+    headerCorner.Parent = header
     
-    -- Fix corner overlap
-    local TitleBarFix = Utilities:Create("Frame", {
-        Name = "CornerFix",
+    -- Fix header bottom corners
+    local headerFix = self:Instance("Frame", {
         Size = UDim2.new(1, 0, 0.5, 0),
         Position = UDim2.new(0, 0, 0.5, 0),
-        BackgroundColor3 = Aurora.Theme.BackgroundSecondary,
+        BackgroundColor3 = Aurora.Theme.BgCard,
         BorderSizePixel = 0,
-        Parent = TitleBar
+        Parent = header
     })
     
-    window.TitleBar = TitleBar
-    
-    -- Title Bar Gradient Accent Line
-    local AccentLine = Utilities:Create("Frame", {
-        Name = "AccentLine",
+    -- Accent line under header
+    local accentLine = self:Instance("Frame", {
         Size = UDim2.new(1, 0, 0, 2),
         Position = UDim2.new(0, 0, 1, -2),
         BackgroundColor3 = Aurora.Theme.Accent,
-        Parent = TitleBar
-    }, {
-        Utilities:CreateGradient(Aurora.Theme.GradientAurora, 90)
+        Parent = header
     })
+    self:Gradient(Aurora.Theme.GradientAccent, 0).Parent = accentLine
     
-    -- Logo/Icon
-    local Logo = Utilities:Create("ImageLabel", {
-        Name = "Logo",
-        Size = UDim2.new(0, 24, 0, 24),
-        Position = UDim2.new(0, 15, 0.5, 0),
+    -- Logo icon
+    local logoIcon = self:Instance("ImageLabel", {
+        Size = UDim2.new(0, 22, 0, 22),
+        Position = UDim2.new(0, 16, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
         BackgroundTransparency = 1,
         Image = "rbxassetid://10886031167",
-        ImageColor3 = Aurora.Theme.AccentSecondary,
-        Parent = TitleBar
+        ImageColor3 = Aurora.Theme.Cyan,
+        Parent = header
     })
     
-    -- Title Text
-    local TitleText = Utilities:Create("TextLabel", {
-        Name = "Title",
+    -- Title
+    local title = self:Instance("TextLabel", {
         Size = UDim2.new(1, -200, 1, 0),
-        Position = UDim2.new(0, 48, 0, 0),
+        Position = UDim2.new(0, 46, 0, 0),
         BackgroundTransparency = 1,
         Text = window.Title,
-        TextColor3 = Color3.new(1, 1, 1),
-        TextSize = 16,
+        TextColor3 = Aurora.Theme.TextMain,
+        TextSize = 14,
         Font = Enum.Font.GothamBold,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = TitleBar
+        Parent = header
     })
     
-    -- Subtitle Text
-    if window.Subtitle ~= "" then
-        local SubtitleLabel = Utilities:Create("TextLabel", {
-            Name = "Subtitle",
-            Size = UDim2.new(1, -200, 0, 14),
-            Position = UDim2.new(0, 48, 1, -18),
-            BackgroundTransparency = 1,
-            Text = window.Subtitle,
-            TextColor3 = Aurora.Theme.TextMuted,
-            TextSize = 11,
-            Font = Enum.Font.Gotham,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = TitleBar
-        })
-    end
-    
-    -- Window Controls Container
-    local ControlsContainer = Utilities:Create("Frame", {
-        Name = "Controls",
-        Size = UDim2.new(0, 100, 1, 0),
-        Position = UDim2.new(1, -105, 0, 0),
+    -- Window controls
+    local controls = self:Instance("Frame", {
+        Size = UDim2.new(0, 90, 1, 0),
+        Position = UDim2.new(1, -100, 0, 0),
         BackgroundTransparency = 1,
-        Parent = TitleBar
-    }, {
-        Utilities:Create("UIListLayout", {
-            FillDirection = Enum.FillDirection.Horizontal,
-            HorizontalAlignment = Enum.HorizontalAlignment.Right,
-            VerticalAlignment = Enum.VerticalAlignment.Center,
-            Padding = UDim.new(0, 5)
+        Parent = header
+    })
+    self:Instance("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        HorizontalAlignment = Enum.HorizontalAlignment.Right,
+        VerticalAlignment = Enum.VerticalAlignment.Center,
+        Padding = UDim.new(0, 6)
+    }).Parent = controls
+    
+    -- Control buttons
+    local btnSize = UDim2.new(0, 26, 0, 26)
+    local function ctrlBtn(text, callback)
+        local btn = self:Instance("TextButton", {
+            Size = btnSize,
+            BackgroundColor3 = Aurora.Theme.BgInput,
+            BackgroundTransparency = 0.5,
+            Text = text,
+            TextColor3 = Aurora.Theme.TextSub,
+            TextSize = 12,
+            Font = Enum.Font.GothamBold,
+            Parent = controls
         })
-    })
-    
-    -- Minimize Button
-    local MinimizeButton = Utilities:Create("TextButton", {
-        Name = "Minimize",
-        Size = UDim2.new(0, 28, 0, 28),
-        BackgroundColor3 = Aurora.Theme.BackgroundTertiary,
-        BackgroundTransparency = 0.5,
-        Text = "−",
-        TextColor3 = Aurora.Theme.TextSecondary,
-        TextSize = 18,
-        Font = Enum.Font.GothamBold,
-        Parent = ControlsContainer
-    }, {
-        Utilities:CreateCorner(6)
-    })
-    
-    -- Maximize Button
-    local MaximizeButton = Utilities:Create("TextButton", {
-        Name = "Maximize",
-        Size = UDim2.new(0, 28, 0, 28),
-        BackgroundColor3 = Aurora.Theme.BackgroundTertiary,
-        BackgroundTransparency = 0.5,
-        Text = "□",
-        TextColor3 = Aurora.Theme.TextSecondary,
-        TextSize = 14,
-        Font = Enum.Font.GothamBold,
-        Parent = ControlsContainer
-    }, {
-        Utilities:CreateCorner(6)
-    })
-    
-    -- Close Button
-    local CloseButton = Utilities:Create("TextButton", {
-        Name = "Close",
-        Size = UDim2.new(0, 28, 0, 28),
-        BackgroundColor3 = Aurora.Theme.BackgroundTertiary,
-        BackgroundTransparency = 0.5,
-        Text = "✕",
-        TextColor3 = Aurora.Theme.TextSecondary,
-        TextSize = 14,
-        Font = Enum.Font.GothamBold,
-        Parent = ControlsContainer
-    }, {
-        Utilities:CreateCorner(6)
-    })
-    
-    -- Button Hover Effects
-    for _, button in pairs({MinimizeButton, MaximizeButton, CloseButton}) do
-        button.MouseEnter:Connect(function()
-            Utilities:Tween(button, {BackgroundTransparency = 0}, 0.15)
-            if button.Name == "Close" then
-                button.BackgroundColor3 = Aurora.Theme.AccentDanger
-                button.TextColor3 = Color3.new(1, 1, 1)
+        self:Corner(6).Parent = btn
+        
+        btn.MouseEnter:Connect(function()
+            self:Tween(btn, {BackgroundTransparency = 0})
+            if text == "X" then
+                btn.BackgroundColor3 = Aurora.Theme.Red
+                btn.TextColor3 = Color3.new(1, 1, 1)
             end
         end)
-        
-        button.MouseLeave:Connect(function()
-            Utilities:Tween(button, {BackgroundTransparency = 0.5}, 0.15)
-            button.BackgroundColor3 = Aurora.Theme.BackgroundTertiary
-            button.TextColor3 = Aurora.Theme.TextSecondary
+        btn.MouseLeave:Connect(function()
+            self:Tween(btn, {BackgroundTransparency = 0.5})
+            btn.BackgroundColor3 = Aurora.Theme.BgInput
+            btn.TextColor3 = Aurora.Theme.TextSub
         end)
-        
-        button.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                Animations:Ripple(button, button.AbsoluteSize.X / 2, button.AbsoluteSize.Y / 2, Color3.new(1, 1, 1))
-            end
-        end)
+        btn.MouseButton1Click:Connect(callback)
+        return btn
     end
     
-    -- Tab Container (Left Sidebar)
-    local TabContainer = Utilities:Create("Frame", {
-        Name = "TabContainer",
-        Size = UDim2.new(0, 160, 1, -45),
-        Position = UDim2.new(0, 0, 0, 45),
-        BackgroundColor3 = Aurora.Theme.BackgroundSecondary,
-        Parent = MainFrame
-    }, {
-        Utilities:CreatePadding(10, 10, 10, 10),
-        Utilities:Create("UIListLayout", {
-            FillDirection = Enum.FillDirection.Vertical,
-            Padding = UDim.new(0, 4)
-        })
+    local minBtn = ctrlBtn("-", function()
+        if window.Minimized then
+            self:Tween(main, {Size = window.Size}, 0.25)
+            minBtn.Text = "-"
+        else
+            self:Tween(main, {Size = UDim2.new(window.Size.X.Offset, 0, 0, 50)}, 0.25)
+            minBtn.Text = "+"
+        end
+        window.Minimized = not window.Minimized
+    end)
+    
+    ctrlBtn("[]", function()
+        if window.Maximized then
+            main.AnchorPoint = Vector2.new(0, 0)
+            self:Tween(main, {Size = window.Size, Position = UDim2.new(0.5, 0, 0.5, 0)}, 0.25)
+            main.AnchorPoint = Vector2.new(0.5, 0.5)
+        else
+            self:Tween(main, {Size = UDim2.new(0.85, 0, 0.85, 0)}, 0.25)
+        end
+        window.Maximized = not window.Maximized
+    end)
+    
+    ctrlBtn("X", function()
+        self:Tween(main, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
+        task.wait(0.2)
+        screen:Destroy()
+    end)
+    
+    -- Sidebar
+    local sidebar = self:Instance("Frame", {
+        Name = "Sidebar",
+        Size = UDim2.new(0, 140, 1, -50),
+        Position = UDim2.new(0, 0, 0, 50),
+        BackgroundColor3 = Aurora.Theme.BgCard,
+        Parent = main
     })
+    self:Corner(0).Parent = sidebar
     
-    window.TabContainer = TabContainer
-    
-    -- Content Container (Main Area)
-    local ContentContainer = Utilities:Create("Frame", {
-        Name = "ContentContainer",
-        Size = UDim2.new(1, -160, 1, -45),
-        Position = UDim2.new(0, 160, 0, 45),
-        BackgroundColor3 = Aurora.Theme.Background,
-        Parent = MainFrame
-    })
-    
-    window.ContentContainer = ContentContainer
-    
-    -- Tab Content Container
-    local TabContentContainer = Utilities:Create("ScrollingFrame", {
-        Name = "TabContent",
-        Size = UDim2.new(1, -20, 1, -10),
-        Position = UDim2.new(0, 10, 0, 5),
+    -- Tab list
+    local tabList = self:Instance("ScrollingFrame", {
+        Size = UDim2.new(1, 0, 1, -100),
         BackgroundTransparency = 1,
-        ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Aurora.Theme.Accent,
-        ScrollBarImageTransparency = 0.5,
+        ScrollBarThickness = 0,
         CanvasSize = UDim2.new(0, 0, 0, 0),
         AutomaticCanvasSize = Enum.AutomaticSize.Y,
-        Parent = ContentContainer
-    }, {
-        Utilities:CreatePadding(0, 0, 0, 5),
-        Utilities:Create("UIListLayout", {
-            FillDirection = Enum.FillDirection.Vertical,
-            Padding = UDim.new(0, 10)
-        })
+        Parent = sidebar
     })
+    self:Padding(8, 8, 8, 8).Parent = tabList
+    self:Instance("UIListLayout", {
+        FillDirection = Enum.FillDirection.Vertical,
+        Padding = UDim.new(0, 4)
+    }).Parent = tabList
     
-    window.TabContentContainer = TabContentContainer
-    
-    -- User Info Container (Bottom of Tab Container)
-    local UserInfoContainer = Utilities:Create("Frame", {
-        Name = "UserInfoContainer",
-        Size = UDim2.new(1, -20, 0, 90),
-        Position = UDim2.new(0, 10, 1, -100),
-        BackgroundColor3 = Aurora.Theme.BackgroundTertiary,
-        Parent = TabContainer
-    }, {
-        Utilities:CreateCorner(8),
-        Utilities:CreateStroke(Aurora.Theme.Border, 1, 0)
+    -- User card at bottom of sidebar
+    local userCard = self:Instance("Frame", {
+        Size = UDim2.new(1, -16, 0, 85),
+        Position = UDim2.new(0, 8, 1, -93),
+        BackgroundColor3 = Aurora.Theme.BgPanel,
+        Parent = sidebar
     })
+    self:Corner(8).Parent = userCard
+    self:Stroke(Aurora.Theme.Border).Parent = userCard
     
-    -- User Avatar
-    local AvatarFrame = Utilities:Create("Frame", {
-        Name = "AvatarFrame",
-        Size = UDim2.new(0, 40, 0, 40),
+    -- User avatar
+    local avatarBg = self:Instance("Frame", {
+        Size = UDim2.new(0, 36, 0, 36),
         Position = UDim2.new(0, 10, 0, 10),
-        BackgroundColor3 = Aurora.Theme.BackgroundAccent,
-        Parent = UserInfoContainer
-    }, {
-        Utilities:CreateCorner(8)
+        BackgroundColor3 = Aurora.Theme.BgInput,
+        Parent = userCard
     })
+    self:Corner(6).Parent = avatarBg
     
-    local AvatarImage = Utilities:Create("ImageLabel", {
-        Name = "Avatar",
+    local avatar = self:Instance("ImageLabel", {
         Size = UDim2.new(1, -4, 1, -4),
         Position = UDim2.new(0, 2, 0, 2),
         BackgroundTransparency = 1,
         Image = Players:GetUserThumbnailAsync(Players.LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48),
-        Parent = AvatarFrame
-    }, {
-        Utilities:CreateCorner(6)
+        Parent = avatarBg
     })
+    self:Corner(4).Parent = avatar
     
     -- Username
-    local UsernameLabel = Utilities:Create("TextLabel", {
-        Name = "Username",
-        Size = UDim2.new(1, -70, 0, 18),
-        Position = UDim2.new(0, 58, 0, 10),
+    local username = self:Instance("TextLabel", {
+        Size = UDim2.new(1, -60, 0, 16),
+        Position = UDim2.new(0, 54, 0, 10),
         BackgroundTransparency = 1,
         Text = Players.LocalPlayer.Name,
-        TextColor3 = Color3.new(1, 1, 1),
-        TextSize = 13,
+        TextColor3 = Aurora.Theme.TextMain,
+        TextSize = 12,
         Font = Enum.Font.GothamBold,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextTruncate = Enum.TextTruncate.AtEnd,
-        Parent = UserInfoContainer
+        Parent = userCard
     })
     
     -- User ID
-    local UserIdLabel = Utilities:Create("TextLabel", {
-        Name = "UserId",
-        Size = UDim2.new(1, -70, 0, 14),
-        Position = UDim2.new(0, 58, 0, 28),
+    local userId = self:Instance("TextLabel", {
+        Size = UDim2.new(1, -60, 0, 14),
+        Position = UDim2.new(0, 54, 0, 26),
         BackgroundTransparency = 1,
-        Text = "ID: " .. tostring(Players.LocalPlayer.UserId),
+        Text = "ID: " .. Players.LocalPlayer.UserId,
         TextColor3 = Aurora.Theme.TextMuted,
         TextSize = 10,
         Font = Enum.Font.Gotham,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = UserInfoContainer
+        Parent = userCard
     })
     
-    -- Time Display
-    local TimeLabel = Utilities:Create("TextLabel", {
-        Name = "Time",
+    -- Time display
+    local timeLabel = self:Instance("TextLabel", {
         Size = UDim2.new(1, -20, 0, 16),
         Position = UDim2.new(0, 10, 1, -26),
         BackgroundTransparency = 1,
-        Text = "⏱ " .. Utilities:GetTime(),
-        TextColor3 = Aurora.Theme.TextSecondary,
+        Text = Utils:Time(),
+        TextColor3 = Aurora.Theme.Cyan,
         TextSize = 11,
         Font = Enum.Font.GothamMedium,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = UserInfoContainer
+        Parent = userCard
     })
     
-    -- Update time every second
-    spawn(function()
-        while ScreenGui and ScreenGui.Parent do
-            TimeLabel.Text = "⏱ " .. Utilities:GetTime()
-            wait(1)
+    task.spawn(function()
+        while screen and screen.Parent do
+            timeLabel.Text = Utils:Time()
+            task.wait(1)
         end
     end)
     
-    -- Dragging functionality
-    TitleBar.InputBegan:Connect(function(input)
+    -- Content area
+    local content = self:Instance("Frame", {
+        Name = "Content",
+        Size = UDim2.new(1, -140, 1, -50),
+        Position = UDim2.new(0, 140, 0, 50),
+        BackgroundColor3 = Aurora.Theme.BgMain,
+        Parent = main
+    })
+    
+    local contentScroll = self:Instance("ScrollingFrame", {
+        Size = UDim2.new(1, -24, 1, -16),
+        Position = UDim2.new(0, 12, 0, 8),
+        BackgroundTransparency = 1,
+        ScrollBarThickness = 3,
+        ScrollBarImageColor3 = Aurora.Theme.Accent,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        Parent = content
+    })
+    self:Padding(0, 0, 0, 8).Parent = contentScroll
+    self:Instance("UIListLayout", {
+        FillDirection = Enum.FillDirection.Vertical,
+        Padding = UDim.new(0, 8)
+    }).Parent = contentScroll
+    
+    window.TabList = tabList
+    window.Content = contentScroll
+    
+    -- Dragging
+    header.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             window.Dragging = true
-            window.DragOffset = Vector2.new(input.Position.X - MainFrame.AbsolutePosition.X, input.Position.Y - MainFrame.AbsolutePosition.Y)
+            window.DragOffset = Vector2.new(input.Position.X - main.AbsolutePosition.X, input.Position.Y - main.AbsolutePosition.Y)
         end
     end)
     
-    TitleBar.InputEnded:Connect(function(input)
+    header.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             window.Dragging = false
         end
@@ -1085,912 +656,681 @@ function Aurora:CreateWindow(config)
     
     UserInputService.InputChanged:Connect(function(input)
         if window.Dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local newPosition = Vector2.new(input.Position.X - window.DragOffset.X, input.Position.Y - window.DragOffset.Y)
-            MainFrame.Position = UDim2.new(0, newPosition.X, 0, newPosition.Y)
-            MainFrame.AnchorPoint = Vector2.new(0, 0)
+            local pos = Vector2.new(input.Position.X - window.DragOffset.X, input.Position.Y - window.DragOffset.Y)
+            main.Position = UDim2.new(0, pos.X, 0, pos.Y)
+            main.AnchorPoint = Vector2.new(0, 0)
         end
     end)
     
-    -- Control Button Functions
-    MinimizeButton.MouseButton1Click:Connect(function()
-        window.IsMinimized = not window.IsMinimized
-        
-        if window.IsMinimized then
-            Utilities:Tween(MainFrame, {Size = UDim2.new(window.Size.X.Offset, 0, 0, 45)}, 0.3)
-            MinimizeButton.Text = "+"
-        else
-            Utilities:Tween(MainFrame, {Size = window.Size}, 0.3)
-            MinimizeButton.Text = "−"
+    -- Toggle shortcut
+    UserInputService.InputBegan:Connect(function(input, gp)
+        if not gp and input.KeyCode == Enum.KeyCode.RightShift then
+            main.Visible = not main.Visible
         end
     end)
     
-    MaximizeButton.MouseButton1Click:Connect(function()
-        -- Toggle maximize
-        if MainFrame.Size ~= UDim2.new(0.9, 0, 0.9, 0) then
-            window.PreviousSize = MainFrame.Size
-            window.PreviousPosition = MainFrame.Position
-            MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-            MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-            Utilities:Tween(MainFrame, {Size = UDim2.new(0.9, 0, 0.9, 0)}, 0.3)
-        else
-            MainFrame.AnchorPoint = Vector2.new(0, 0)
-            Utilities:Tween(MainFrame, {Size = window.PreviousSize, Position = window.PreviousPosition}, 0.3)
-        end
-    end)
-    
-    CloseButton.MouseButton1Click:Connect(function()
-        Utilities:Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3)
-        wait(0.3)
-        ScreenGui:Destroy()
-    end)
-    
-    -- Keyboard shortcut (Right Shift to toggle)
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
-            MainFrame.Visible = not MainFrame.Visible
-        end
-    end)
-    
-    -- Create Tab Function
-    function window:CreateTab(config)
+    -- Create Tab
+    function window:Tab(config)
         config = config or {}
+        local tab = {Name = config.Name or "Tab", Icon = config.Icon or "", Window = window}
         
-        local tab = {
-            Name = config.Name or "Tab",
-            Icon = config.Icon or "📁",
-            Window = window,
-            Elements = {}
-        }
-        
-        -- Tab Button
-        local TabButton = Utilities:Create("TextButton", {
-            Name = tab.Name,
+        local btn = Utils:Instance("TextButton", {
             Size = UDim2.new(1, 0, 0, 32),
-            BackgroundColor3 = Aurora.Theme.BackgroundTertiary,
+            BackgroundColor3 = Aurora.Theme.BgPanel,
             BackgroundTransparency = 0.5,
             Text = "",
-            Parent = TabContainer
-        }, {
-            Utilities:CreateCorner(6)
+            Parent = window.TabList
         })
+        Utils:Corner(6).Parent = btn
         
-        -- Tab Button Content
-        local TabIcon = Utilities:Create("TextLabel", {
-            Name = "Icon",
-            Size = UDim2.new(0, 24, 1, 0),
-            Position = UDim2.new(0, 8, 0, 0),
-            BackgroundTransparency = 1,
-            Text = tab.Icon,
-            TextColor3 = Aurora.Theme.TextSecondary,
-            TextSize = 14,
-            Font = Enum.Font.Gotham,
-            Parent = TabButton
-        })
-        
-        local TabName = Utilities:Create("TextLabel", {
-            Name = "Name",
-            Size = UDim2.new(1, -45, 1, 0),
-            Position = UDim2.new(0, 35, 0, 0),
+        local label = Utils:Instance("TextLabel", {
+            Size = UDim2.new(1, -16, 1, 0),
+            Position = UDim2.new(0, 12, 0, 0),
             BackgroundTransparency = 1,
             Text = tab.Name,
-            TextColor3 = Aurora.Theme.TextSecondary,
+            TextColor3 = Aurora.Theme.TextSub,
             TextSize = 12,
             Font = Enum.Font.GothamMedium,
             TextXAlignment = Enum.TextXAlignment.Left,
-            TextTruncate = Enum.TextTruncate.AtEnd,
-            Parent = TabButton
+            Parent = btn
         })
         
-        -- Tab Content Frame
-        local TabContent = Utilities:Create("Frame", {
-            Name = tab.Name .. "Content",
-            Size = UDim2.new(1, 0, 1, 0),
+        -- Tab content
+        local tabContent = Utils:Instance("Frame", {
+            Size = UDim2.new(1, 0, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
             BackgroundTransparency = 1,
             Visible = false,
-            Parent = TabContentContainer
+            Parent = window.Content
         })
+        Utils:Instance("UIListLayout", {
+            FillDirection = Enum.FillDirection.Vertical,
+            Padding = UDim.new(0, 8)
+        }).Parent = tabContent
         
-        tab.Button = TabButton
-        tab.Content = TabContent
+        tab.Button = btn
+        tab.Content = tabContent
         
-        -- Tab Selection
-        TabButton.MouseButton1Click:Connect(function()
+        btn.MouseButton1Click:Connect(function()
             window:SelectTab(tab)
         end)
         
-        TabButton.MouseEnter:Connect(function()
+        btn.MouseEnter:Connect(function()
             if tab ~= window.CurrentTab then
-                Utilities:Tween(TabButton, {BackgroundTransparency = 0.3}, 0.15)
+                Utils:Tween(btn, {BackgroundTransparency = 0.3})
             end
         end)
         
-        TabButton.MouseLeave:Connect(function()
+        btn.MouseLeave:Connect(function()
             if tab ~= window.CurrentTab then
-                Utilities:Tween(TabButton, {BackgroundTransparency = 0.5}, 0.15)
+                Utils:Tween(btn, {BackgroundTransparency = 0.5})
             end
         end)
         
         table.insert(window.Tabs, tab)
+        if #window.Tabs == 1 then window:SelectTab(tab) end
         
-        -- Auto-select first tab
-        if #window.Tabs == 1 then
-            window:SelectTab(tab)
-        end
-        
-        -- Section Functions
-        function tab:CreateSection(config)
+        -- Section
+        function tab:Section(config)
             config = config or {}
+            local section = {Name = config.Name or "Section"}
             
-            local section = {
-                Name = config.Name or "Section",
-                Tab = tab,
-                Elements = {}
-            }
-            
-            local SectionFrame = Utilities:Create("Frame", {
-                Name = section.Name,
+            local frame = Utils:Instance("Frame", {
                 Size = UDim2.new(1, 0, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
-                BackgroundColor3 = Aurora.Theme.BackgroundSecondary,
-                Parent = TabContent
-            }, {
-                Utilities:CreateCorner(8),
-                Utilities:CreateStroke(Aurora.Theme.Border, 1, 0),
-                Utilities:CreatePadding(10, 35, 10, 10),
-                Utilities:Create("UIListLayout", {
-                    FillDirection = Enum.FillDirection.Vertical,
-                    Padding = UDim.new(0, 8)
-                })
+                BackgroundColor3 = Aurora.Theme.BgCard,
+                Parent = tab.Content
             })
+            Utils:Corner(8).Parent = frame
+            Utils:Stroke(Aurora.Theme.Border).Parent = frame
+            Utils:Padding(12, 12, 12, 12).Parent = frame
             
-            -- Section Title
-            local SectionTitle = Utilities:Create("TextLabel", {
-                Name = "Title",
-                Size = UDim2.new(1, 0, 0, 24),
-                Position = UDim2.new(0, 0, 0, 0),
+            local list = Utils:Instance("UIListLayout", {
+                FillDirection = Enum.FillDirection.Vertical,
+                Padding = UDim.new(0, 8)
+            })
+            list.Parent = frame
+            
+            -- Section title
+            local title = Utils:Instance("TextLabel", {
+                Size = UDim2.new(1, 0, 0, 20),
                 BackgroundTransparency = 1,
                 Text = section.Name,
-                TextColor3 = Color3.new(1, 1, 1),
+                TextColor3 = Aurora.Theme.TextMain,
                 TextSize = 13,
                 Font = Enum.Font.GothamBold,
                 TextXAlignment = Enum.TextXAlignment.Left,
-                Parent = SectionFrame
+                Parent = frame
             })
             
-            section.Frame = SectionFrame
+            section.Frame = frame
             
-            -- Button Component
-            function section:CreateButton(config)
+            -- Button
+            function section:Button(config)
                 config = config or {}
-                
-                local button = {
-                    Name = config.Name or "Button",
-                    Callback = config.Callback or function() end
-                }
-                
-                local ButtonFrame = Utilities:Create("TextButton", {
-                    Name = button.Name,
+                local btn = Utils:Instance("TextButton", {
                     Size = UDim2.new(1, 0, 0, 36),
                     BackgroundColor3 = Aurora.Theme.Accent,
-                    Text = "",
-                    Parent = SectionFrame
-                }, {
-                    Utilities:CreateCorner(6),
-                    Utilities:CreateGradient(Aurora.Theme.GradientAurora, 90)
-                })
-                
-                local ButtonLabel = Utilities:Create("TextLabel", {
-                    Name = "Label",
-                    Size = UDim2.new(1, 0, 1, 0),
-                    BackgroundTransparency = 1,
-                    Text = button.Name,
+                    Text = config.Name or "Button",
                     TextColor3 = Color3.new(1, 1, 1),
                     TextSize = 12,
                     Font = Enum.Font.GothamBold,
-                    Parent = ButtonFrame
+                    Parent = frame
                 })
+                Utils:Corner(6).Parent = btn
+                Utils:Gradient(Aurora.Theme.GradientAccent, 0).Parent = btn
                 
-                -- Hover Effects
-                ButtonFrame.MouseEnter:Connect(function()
-                    Utilities:Tween(ButtonFrame, {BackgroundColor3 = Color3.fromRGB(160, 60, 255)}, 0.15)
+                btn.MouseEnter:Connect(function()
+                    Utils:Tween(btn, {BackgroundColor3 = Aurora.Theme.AccentLight})
+                end)
+                btn.MouseLeave:Connect(function()
+                    Utils:Tween(btn, {BackgroundColor3 = Aurora.Theme.Accent})
                 end)
                 
-                ButtonFrame.MouseLeave:Connect(function()
-                    Utilities:Tween(ButtonFrame, {BackgroundColor3 = Aurora.Theme.Accent}, 0.15)
-                end)
-                
-                ButtonFrame.InputBegan:Connect(function(input)
+                btn.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        Animations:Ripple(ButtonFrame, input.Position.X - ButtonFrame.AbsolutePosition.X, input.Position.Y - ButtonFrame.AbsolutePosition.Y)
-                        button.Callback()
+                        Utils:Ripple(btn, input.Position.X - btn.AbsolutePosition.X, input.Position.Y - btn.AbsolutePosition.Y)
+                        if config.Callback then config.Callback() end
                     end
                 end)
                 
-                button.Frame = ButtonFrame
-                
-                return button
+                return btn
             end
             
-            -- Toggle Component
-            function section:CreateToggle(config)
+            -- Toggle
+            function section:Toggle(config)
                 config = config or {}
+                local toggle = {Value = config.Default or false}
                 
-                local toggle = {
-                    Name = config.Name or "Toggle",
-                    Default = config.Default or false,
-                    Callback = config.Callback or function() end,
-                    Value = config.Default or false
-                }
-                
-                local ToggleFrame = Utilities:Create("Frame", {
-                    Name = toggle.Name,
-                    Size = UDim2.new(1, 0, 0, 32),
+                local container = Utils:Instance("Frame", {
+                    Size = UDim2.new(1, 0, 0, 28),
                     BackgroundTransparency = 1,
-                    Parent = SectionFrame
+                    Parent = frame
                 })
                 
-                local ToggleLabel = Utilities:Create("TextLabel", {
-                    Name = "Label",
+                local label = Utils:Instance("TextLabel", {
                     Size = UDim2.new(1, -50, 1, 0),
                     BackgroundTransparency = 1,
-                    Text = toggle.Name,
-                    TextColor3 = Aurora.Theme.TextPrimary,
+                    Text = config.Name or "Toggle",
+                    TextColor3 = Aurora.Theme.TextMain,
                     TextSize = 12,
                     Font = Enum.Font.GothamMedium,
                     TextXAlignment = Enum.TextXAlignment.Left,
-                    Parent = ToggleFrame
+                    Parent = container
                 })
                 
-                local ToggleButton = Utilities:Create("TextButton", {
-                    Name = "Button",
-                    Size = UDim2.new(0, 40, 0, 22),
-                    Position = UDim2.new(1, -45, 0.5, 0),
+                local toggleBtn = Utils:Instance("TextButton", {
+                    Size = UDim2.new(0, 38, 0, 20),
+                    Position = UDim2.new(1, -43, 0.5, 0),
                     AnchorPoint = Vector2.new(0, 0.5),
-                    BackgroundColor3 = Aurora.Theme.BackgroundTertiary,
+                    BackgroundColor3 = Aurora.Theme.BgInput,
                     Text = "",
-                    Parent = ToggleFrame
-                }, {
-                    Utilities:CreateCorner(11),
-                    Utilities:CreateStroke(Aurora.Theme.Border, 1, 0)
+                    Parent = container
                 })
+                Utils:Corner(10).Parent = toggleBtn
+                Utils:Stroke(Aurora.Theme.Border).Parent = toggleBtn
                 
-                local ToggleIndicator = Utilities:Create("Frame", {
-                    Name = "Indicator",
-                    Size = UDim2.new(0, 16, 0, 16),
+                local indicator = Utils:Instance("Frame", {
+                    Size = UDim2.new(0, 14, 0, 14),
                     Position = UDim2.new(0, 3, 0.5, 0),
                     AnchorPoint = Vector2.new(0, 0.5),
                     BackgroundColor3 = Aurora.Theme.TextMuted,
-                    Parent = ToggleButton
-                }, {
-                    Utilities:CreateCorner(8)
+                    Parent = toggleBtn
                 })
+                Utils:Corner(7).Parent = indicator
                 
-                -- Set initial state
-                if toggle.Default then
-                    ToggleIndicator.Position = UDim2.new(1, -19, 0.5, 0)
-                    ToggleIndicator.BackgroundColor3 = Aurora.Theme.AccentSecondary
-                    ToggleButton.BackgroundColor3 = Color3.fromRGB(20, 60, 70)
+                if config.Default then
+                    indicator.Position = UDim2.new(1, -17, 0.5, 0)
+                    indicator.BackgroundColor3 = Aurora.Theme.Cyan
+                    toggleBtn.BackgroundColor3 = Color3.fromRGB(30, 60, 70)
                 end
                 
-                ToggleButton.MouseButton1Click:Connect(function()
+                toggleBtn.MouseButton1Click:Connect(function()
                     toggle.Value = not toggle.Value
-                    
                     if toggle.Value then
-                        Utilities:Tween(ToggleIndicator, {Position = UDim2.new(1, -19, 0.5, 0), BackgroundColor3 = Aurora.Theme.AccentSecondary}, 0.2)
-                        Utilities:Tween(ToggleButton, {BackgroundColor3 = Color3.fromRGB(20, 60, 70)}, 0.2)
+                        Utils:Tween(indicator, {Position = UDim2.new(1, -17, 0.5, 0), BackgroundColor3 = Aurora.Theme.Cyan}, 0.2)
+                        Utils:Tween(toggleBtn, {BackgroundColor3 = Color3.fromRGB(30, 60, 70)}, 0.2)
                     else
-                        Utilities:Tween(ToggleIndicator, {Position = UDim2.new(0, 3, 0.5, 0), BackgroundColor3 = Aurora.Theme.TextMuted}, 0.2)
-                        Utilities:Tween(ToggleButton, {BackgroundColor3 = Aurora.Theme.BackgroundTertiary}, 0.2)
+                        Utils:Tween(indicator, {Position = UDim2.new(0, 3, 0.5, 0), BackgroundColor3 = Aurora.Theme.TextMuted}, 0.2)
+                        Utils:Tween(toggleBtn, {BackgroundColor3 = Aurora.Theme.BgInput}, 0.2)
                     end
-                    
-                    toggle.Callback(toggle.Value)
+                    if config.Callback then config.Callback(toggle.Value) end
                 end)
-                
-                toggle.Frame = ToggleFrame
-                toggle.Button = ToggleButton
                 
                 return toggle
             end
             
-            -- Slider Component
-            function section:CreateSlider(config)
+            -- Slider
+            function section:Slider(config)
                 config = config or {}
+                local slider = {Value = config.Default or config.Min or 0, Min = config.Min or 0, Max = config.Max or 100}
                 
-                local slider = {
-                    Name = config.Name or "Slider",
-                    Min = config.Min or 0,
-                    Max = config.Max or 100,
-                    Default = config.Default or 50,
-                    Increment = config.Increment or 1,
-                    Suffix = config.Suffix or "",
-                    Callback = config.Callback or function() end,
-                    Value = config.Default or 50
-                }
-                
-                local SliderFrame = Utilities:Create("Frame", {
-                    Name = slider.Name,
-                    Size = UDim2.new(1, 0, 0, 50),
+                local container = Utils:Instance("Frame", {
+                    Size = UDim2.new(1, 0, 0, 44),
                     BackgroundTransparency = 1,
-                    Parent = SectionFrame
+                    Parent = frame
                 })
                 
-                local SliderHeader = Utilities:Create("Frame", {
-                    Name = "Header",
+                local header = Utils:Instance("Frame", {
                     Size = UDim2.new(1, 0, 0, 18),
                     BackgroundTransparency = 1,
-                    Parent = SliderFrame
+                    Parent = container
                 })
                 
-                local SliderLabel = Utilities:Create("TextLabel", {
-                    Name = "Label",
+                local label = Utils:Instance("TextLabel", {
                     Size = UDim2.new(0.5, 0, 1, 0),
                     BackgroundTransparency = 1,
-                    Text = slider.Name,
-                    TextColor3 = Aurora.Theme.TextPrimary,
+                    Text = config.Name or "Slider",
+                    TextColor3 = Aurora.Theme.TextMain,
                     TextSize = 12,
                     Font = Enum.Font.GothamMedium,
                     TextXAlignment = Enum.TextXAlignment.Left,
-                    Parent = SliderHeader
+                    Parent = header
                 })
                 
-                local SliderValue = Utilities:Create("TextLabel", {
-                    Name = "Value",
+                local valLabel = Utils:Instance("TextLabel", {
                     Size = UDim2.new(0.5, 0, 1, 0),
                     Position = UDim2.new(0.5, 0, 0, 0),
                     BackgroundTransparency = 1,
-                    Text = tostring(slider.Default) .. slider.Suffix,
-                    TextColor3 = Aurora.Theme.AccentSecondary,
+                    Text = tostring(slider.Value) .. (config.Suffix or ""),
+                    TextColor3 = Aurora.Theme.Cyan,
                     TextSize = 12,
                     Font = Enum.Font.GothamBold,
                     TextXAlignment = Enum.TextXAlignment.Right,
-                    Parent = SliderHeader
+                    Parent = header
                 })
                 
-                local SliderTrack = Utilities:Create("Frame", {
-                    Name = "Track",
-                    Size = UDim2.new(1, 0, 0, 6),
-                    Position = UDim2.new(0, 0, 1, -6),
-                    BackgroundColor3 = Aurora.Theme.BackgroundTertiary,
-                    Parent = SliderFrame
-                }, {
-                    Utilities:CreateCorner(3)
+                local track = Utils:Instance("Frame", {
+                    Size = UDim2.new(1, 0, 0, 5),
+                    Position = UDim2.new(0, 0, 1, -5),
+                    BackgroundColor3 = Aurora.Theme.BgInput,
+                    Parent = container
                 })
+                Utils:Corner(2).Parent = track
                 
-                local SliderFill = Utilities:Create("Frame", {
-                    Name = "Fill",
-                    Size = UDim2.new((slider.Default - slider.Min) / (slider.Max - slider.Min), 0, 1, 0),
+                local fill = Utils:Instance("Frame", {
+                    Size = UDim2.new((slider.Value - slider.Min) / (slider.Max - slider.Min), 0, 1, 0),
                     BackgroundColor3 = Aurora.Theme.Accent,
-                    Parent = SliderTrack
-                }, {
-                    Utilities:CreateCorner(3),
-                    Utilities:CreateGradient({
-                        Aurora.Theme.AccentSecondary,
-                        Aurora.Theme.Accent
-                    }, 0)
+                    Parent = track
                 })
+                Utils:Corner(2).Parent = fill
+                Utils:Gradient(Aurora.Theme.GradientAccent, 0).Parent = fill
                 
-                local SliderKnob = Utilities:Create("Frame", {
-                    Name = "Knob",
-                    Size = UDim2.new(0, 16, 0, 16),
-                    Position = UDim2.new((slider.Default - slider.Min) / (slider.Max - slider.Min), -8, 0.5, 0),
+                local knob = Utils:Instance("Frame", {
+                    Size = UDim2.new(0, 14, 0, 14),
+                    Position = UDim2.new((slider.Value - slider.Min) / (slider.Max - slider.Min), -7, 0.5, 0),
                     AnchorPoint = Vector2.new(0, 0.5),
                     BackgroundColor3 = Color3.new(1, 1, 1),
-                    Parent = SliderTrack
-                }, {
-                    Utilities:CreateCorner(8),
-                    Utilities:CreateStroke(Aurora.Theme.Accent, 2, 0)
+                    Parent = track
                 })
+                Utils:Corner(7).Parent = knob
+                Utils:Stroke(Aurora.Theme.Accent, 2).Parent = knob
                 
                 local dragging = false
                 
-                SliderTrack.InputBegan:Connect(function(input)
+                track.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         dragging = true
-                        updateSlider(input)
+                        update(input)
                     end
                 end)
-                
-                SliderTrack.InputEnded:Connect(function(input)
+                track.InputEnded:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         dragging = false
                     end
                 end)
-                
                 UserInputService.InputChanged:Connect(function(input)
                     if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                        updateSlider(input)
+                        update(input)
                     end
                 end)
                 
-                function updateSlider(input)
-                    local xPos = math.clamp((input.Position.X - SliderTrack.AbsolutePosition.X) / SliderTrack.AbsoluteSize.X, 0, 1)
-                    local value = math.floor(((slider.Min + (slider.Max - slider.Min) * xPos) / slider.Increment) + 0.5) * slider.Increment
-                    value = math.clamp(value, slider.Min, slider.Max)
-                    
-                    slider.Value = value
-                    SliderValue.Text = tostring(Utilities:Round(value, 2)) .. slider.Suffix
-                    
-                    local fillSize = (value - slider.Min) / (slider.Max - slider.Min)
-                    Utilities:Tween(SliderFill, {Size = UDim2.new(fillSize, 0, 1, 0)}, 0.05)
-                    Utilities:Tween(SliderKnob, {Position = UDim2.new(fillSize, -8, 0.5, 0)}, 0.05)
-                    
-                    slider.Callback(value)
+                function update(input)
+                    local x = math.clamp((input.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
+                    local val = math.floor((slider.Min + (slider.Max - slider.Min) * x) / (config.Increment or 1) + 0.5) * (config.Increment or 1)
+                    val = math.clamp(val, slider.Min, slider.Max)
+                    slider.Value = val
+                    valLabel.Text = tostring(val) .. (config.Suffix or "")
+                    local pct = (val - slider.Min) / (slider.Max - slider.Min)
+                    Utils:Tween(fill, {Size = UDim2.new(pct, 0, 1, 0)}, 0.05)
+                    Utils:Tween(knob, {Position = UDim2.new(pct, -7, 0.5, 0)}, 0.05)
+                    if config.Callback then config.Callback(val) end
                 end
-                
-                slider.Frame = SliderFrame
                 
                 return slider
             end
             
-            -- Dropdown Component
-            function section:CreateDropdown(config)
+            -- Dropdown
+            function section:Dropdown(config)
                 config = config or {}
+                local dropdown = {Value = config.Default or config.Options[1], Options = config.Options or {}, IsOpen = false}
                 
-                local dropdown = {
-                    Name = config.Name or "Dropdown",
-                    Options = config.Options or {"Option 1", "Option 2", "Option 3"},
-                    Default = config.Default or config.Options[1],
-                    Callback = config.Callback or function() end,
-                    Value = config.Default or config.Options[1],
-                    IsOpen = false
-                }
-                
-                local DropdownFrame = Utilities:Create("Frame", {
-                    Name = dropdown.Name,
+                local container = Utils:Instance("Frame", {
                     Size = UDim2.new(1, 0, 0, 32),
                     BackgroundTransparency = 1,
-                    Parent = SectionFrame
+                    Parent = frame
                 })
                 
-                local DropdownButton = Utilities:Create("TextButton", {
-                    Name = "Button",
+                local btn = Utils:Instance("TextButton", {
                     Size = UDim2.new(1, 0, 1, 0),
-                    BackgroundColor3 = Aurora.Theme.BackgroundTertiary,
+                    BackgroundColor3 = Aurora.Theme.BgInput,
                     Text = "",
-                    Parent = DropdownFrame
-                }, {
-                    Utilities:CreateCorner(6),
-                    Utilities:CreateStroke(Aurora.Theme.Border, 1, 0)
+                    Parent = container
                 })
+                Utils:Corner(6).Parent = btn
+                Utils:Stroke(Aurora.Theme.Border).Parent = btn
                 
-                local DropdownLabel = Utilities:Create("TextLabel", {
-                    Name = "Label",
+                local label = Utils:Instance("TextLabel", {
                     Size = UDim2.new(1, -40, 1, 0),
-                    Position = UDim2.new(0, 10, 0, 0),
+                    Position = UDim2.new(0, 12, 0, 0),
                     BackgroundTransparency = 1,
-                    Text = dropdown.Name .. ": " .. dropdown.Value,
-                    TextColor3 = Aurora.Theme.TextPrimary,
+                    Text = config.Name .. ": " .. dropdown.Value,
+                    TextColor3 = Aurora.Theme.TextMain,
                     TextSize = 12,
                     Font = Enum.Font.GothamMedium,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextTruncate = Enum.TextTruncate.AtEnd,
-                    Parent = DropdownButton
+                    Parent = btn
                 })
                 
-                local DropdownIcon = Utilities:Create("TextLabel", {
-                    Name = "Icon",
-                    Size = UDim2.new(0, 24, 1, 0),
-                    Position = UDim2.new(1, -30, 0, 0),
+                local icon = Utils:Instance("TextLabel", {
+                    Size = UDim2.new(0, 20, 1, 0),
+                    Position = UDim2.new(1, -26, 0, 0),
                     BackgroundTransparency = 1,
-                    Text = "▼",
+                    Text = "v",
                     TextColor3 = Aurora.Theme.TextMuted,
                     TextSize = 10,
                     Font = Enum.Font.GothamBold,
-                    Parent = DropdownButton
+                    Parent = btn
                 })
                 
-                local DropdownList = Utilities:Create("Frame", {
-                    Name = "List",
+                local list = Utils:Instance("Frame", {
                     Size = UDim2.new(1, 0, 0, 0),
-                    Position = UDim2.new(0, 0, 1, 5),
-                    BackgroundColor3 = Aurora.Theme.BackgroundSecondary,
+                    Position = UDim2.new(0, 0, 1, 4),
+                    BackgroundColor3 = Aurora.Theme.BgPanel,
                     Visible = false,
-                    ZIndex = 100,
-                    Parent = DropdownFrame
-                }, {
-                    Utilities:CreateCorner(6),
-                    Utilities:CreateStroke(Aurora.Theme.Border, 1, 0),
-                    Utilities:Create("UIListLayout", {
-                        FillDirection = Enum.FillDirection.Vertical
-                    })
+                    ZIndex = 10,
+                    Parent = container
                 })
+                Utils:Corner(6).Parent = list
+                Utils:Stroke(Aurora.Theme.Border).Parent = list
                 
-                -- Populate options
-                for _, option in pairs(dropdown.Options) do
-                    local OptionButton = Utilities:Create("TextButton", {
-                        Name = option,
-                        Size = UDim2.new(1, 0, 0, 28),
+                local listLayout = Utils:Instance("UIListLayout", {FillDirection = Enum.FillDirection.Vertical})
+                listLayout.Parent = list
+                
+                for _, opt in ipairs(dropdown.Options) do
+                    local optBtn = Utils:Instance("TextButton", {
+                        Size = UDim2.new(1, 0, 0, 26),
                         BackgroundTransparency = 1,
-                        Text = option,
-                        TextColor3 = Aurora.Theme.TextSecondary,
+                        Text = opt,
+                        TextColor3 = Aurora.Theme.TextSub,
                         TextSize = 11,
                         Font = Enum.Font.GothamMedium,
-                        Parent = DropdownList
+                        Parent = list
                     })
-                    
-                    OptionButton.MouseEnter:Connect(function()
-                        Utilities:Tween(OptionButton, {BackgroundTransparency = 0.5, BackgroundColor3 = Aurora.Theme.Accent, TextColor3 = Color3.new(1, 1, 1)}, 0.1)
+                    optBtn.MouseEnter:Connect(function()
+                        Utils:Tween(optBtn, {BackgroundColor3 = Aurora.Theme.Accent, BackgroundTransparency = 0})
+                        optBtn.TextColor3 = Color3.new(1, 1, 1)
                     end)
-                    
-                    OptionButton.MouseLeave:Connect(function()
-                        Utilities:Tween(OptionButton, {BackgroundTransparency = 1, TextColor3 = Aurora.Theme.TextSecondary}, 0.1)
+                    optBtn.MouseLeave:Connect(function()
+                        Utils:Tween(optBtn, {BackgroundTransparency = 1})
+                        optBtn.TextColor3 = Aurora.Theme.TextSub
                     end)
-                    
-                    OptionButton.MouseButton1Click:Connect(function()
-                        dropdown.Value = option
-                        DropdownLabel.Text = dropdown.Name .. ": " .. option
-                        dropdown.Callback(option)
-                        toggleDropdown()
+                    optBtn.MouseButton1Click:Connect(function()
+                        dropdown.Value = opt
+                        label.Text = config.Name .. ": " .. opt
+                        toggleList()
+                        if config.Callback then config.Callback(opt) end
                     end)
                 end
                 
-                DropdownList.AutomaticSize = Enum.AutomaticSize.Y
-                
-                function toggleDropdown()
+                function toggleList()
                     dropdown.IsOpen = not dropdown.IsOpen
-                    
                     if dropdown.IsOpen then
-                        DropdownList.Visible = true
-                        DropdownList.Size = UDim2.new(1, 0, 0, 0)
-                        Utilities:Tween(DropdownList, {Size = UDim2.new(1, 0, 0, #dropdown.Options * 28)}, 0.2)
-                        Utilities:Tween(DropdownIcon, {Rotation = 180}, 0.2)
+                        list.Visible = true
+                        Utils:Tween(list, {Size = UDim2.new(1, 0, 0, #dropdown.Options * 26)}, 0.15)
+                        Utils:Tween(icon, {Rotation = 180}, 0.15)
+                        container.Size = UDim2.new(1, 0, 0, 36 + #dropdown.Options * 26)
                     else
-                        Utilities:Tween(DropdownList, {Size = UDim2.new(1, 0, 0, 0)}, 0.2)
-                        Utilities:Tween(DropdownIcon, {Rotation = 0}, 0.2)
-                        delay(0.2, function()
-                            DropdownList.Visible = false
-                        end)
+                        Utils:Tween(list, {Size = UDim2.new(1, 0, 0, 0)}, 0.15)
+                        Utils:Tween(icon, {Rotation = 0}, 0.15)
+                        task.wait(0.15)
+                        list.Visible = false
+                        container.Size = UDim2.new(1, 0, 0, 32)
                     end
                 end
                 
-                DropdownButton.MouseButton1Click:Connect(toggleDropdown)
-                
-                dropdown.Frame = DropdownFrame
+                btn.MouseButton1Click:Connect(toggleList)
                 
                 return dropdown
             end
             
-            -- Keybind Component
-            function section:CreateKeybind(config)
+            -- Keybind
+            function section:Keybind(config)
                 config = config or {}
+                local keybind = {Key = config.Default or Enum.KeyCode.F, Listening = false}
                 
-                local keybind = {
-                    Name = config.Name or "Keybind",
-                    Default = config.Default or Enum.KeyCode.F,
-                    Callback = config.Callback or function() end,
-                    Key = config.Default or Enum.KeyCode.F,
-                    Listening = false
-                }
-                
-                local KeybindFrame = Utilities:Create("Frame", {
-                    Name = keybind.Name,
-                    Size = UDim2.new(1, 0, 0, 32),
+                local container = Utils:Instance("Frame", {
+                    Size = UDim2.new(1, 0, 0, 28),
                     BackgroundTransparency = 1,
-                    Parent = SectionFrame
+                    Parent = frame
                 })
                 
-                local KeybindLabel = Utilities:Create("TextLabel", {
-                    Name = "Label",
-                    Size = UDim2.new(1, -70, 1, 0),
+                local label = Utils:Instance("TextLabel", {
+                    Size = UDim2.new(1, -80, 1, 0),
                     BackgroundTransparency = 1,
-                    Text = keybind.Name,
-                    TextColor3 = Aurora.Theme.TextPrimary,
+                    Text = config.Name or "Keybind",
+                    TextColor3 = Aurora.Theme.TextMain,
                     TextSize = 12,
                     Font = Enum.Font.GothamMedium,
                     TextXAlignment = Enum.TextXAlignment.Left,
-                    Parent = KeybindFrame
+                    Parent = container
                 })
                 
-                local KeybindButton = Utilities:Create("TextButton", {
-                    Name = "Button",
-                    Size = UDim2.new(0, 60, 0, 26),
-                    Position = UDim2.new(1, -65, 0.5, 0),
+                local btn = Utils:Instance("TextButton", {
+                    Size = UDim2.new(0, 70, 0, 24),
+                    Position = UDim2.new(1, -75, 0.5, 0),
                     AnchorPoint = Vector2.new(0, 0.5),
-                    BackgroundColor3 = Aurora.Theme.BackgroundTertiary,
+                    BackgroundColor3 = Aurora.Theme.BgInput,
                     Text = keybind.Key.Name,
-                    TextColor3 = Aurora.Theme.TextSecondary,
+                    TextColor3 = Aurora.Theme.TextSub,
                     TextSize = 11,
                     Font = Enum.Font.GothamBold,
-                    Parent = KeybindFrame
-                }, {
-                    Utilities:CreateCorner(6),
-                    Utilities:CreateStroke(Aurora.Theme.Border, 1, 0)
+                    Parent = container
                 })
+                Utils:Corner(6).Parent = btn
+                Utils:Stroke(Aurora.Theme.Border).Parent = btn
                 
-                KeybindButton.MouseButton1Click:Connect(function()
+                btn.MouseButton1Click:Connect(function()
                     keybind.Listening = true
-                    KeybindButton.Text = "..."
-                    Utilities:Tween(KeybindButton, {BackgroundColor3 = Aurora.Theme.Accent, TextColor3 = Color3.new(1, 1, 1)}, 0.15)
+                    btn.Text = "..."
+                    Utils:Tween(btn, {BackgroundColor3 = Aurora.Theme.Accent, TextColor3 = Color3.new(1, 1, 1)}, 0.15)
                 end)
                 
-                UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                UserInputService.InputBegan:Connect(function(input, gp)
                     if keybind.Listening then
                         if input.KeyCode ~= Enum.KeyCode.Unknown then
                             keybind.Key = input.KeyCode
-                            KeybindButton.Text = input.KeyCode.Name
-                            Utilities:Tween(KeybindButton, {BackgroundColor3 = Aurora.Theme.BackgroundTertiary, TextColor3 = Aurora.Theme.TextSecondary}, 0.15)
+                            btn.Text = input.KeyCode.Name
+                            Utils:Tween(btn, {BackgroundColor3 = Aurora.Theme.BgInput, TextColor3 = Aurora.Theme.TextSub}, 0.15)
                             keybind.Listening = false
                         end
-                    elseif not gameProcessed and input.KeyCode == keybind.Key then
-                        keybind.Callback()
+                    elseif not gp and input.KeyCode == keybind.Key then
+                        if config.Callback then config.Callback() end
                     end
                 end)
-                
-                keybind.Frame = KeybindFrame
                 
                 return keybind
             end
             
-            -- Paragraph/Label Component
-            function section:CreateParagraph(config)
+            -- Textbox
+            function section:Textbox(config)
                 config = config or {}
+                local textbox = {Value = config.Default or ""}
                 
-                local paragraph = {
-                    Title = config.Title or "",
-                    Text = config.Text or "Paragraph text"
-                }
-                
-                local ParagraphFrame = Utilities:Create("Frame", {
-                    Name = "Paragraph",
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    BackgroundColor3 = Aurora.Theme.BackgroundTertiary,
-                    BackgroundTransparency = 0.5,
-                    Parent = SectionFrame
-                }, {
-                    Utilities:CreateCorner(6)
+                local container = Utils:Instance("Frame", {
+                    Size = UDim2.new(1, 0, 0, 46),
+                    BackgroundTransparency = 1,
+                    Parent = frame
                 })
                 
-                local Padding = Utilities:CreatePadding(10, 10, 10, 10)
-                Padding.Parent = ParagraphFrame
-                
-                if paragraph.Title ~= "" then
-                    local TitleLabel = Utilities:Create("TextLabel", {
-                        Name = "Title",
-                        Size = UDim2.new(1, 0, 0, 18),
-                        BackgroundTransparency = 1,
-                        Text = paragraph.Title,
-                        TextColor3 = Aurora.Theme.AccentSecondary,
-                        TextSize = 12,
-                        Font = Enum.Font.GothamBold,
-                        TextXAlignment = Enum.TextXAlignment.Left,
-                        Parent = ParagraphFrame
-                    })
-                end
-                
-                local TextLabel = Utilities:Create("TextLabel", {
-                    Name = "Text",
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
+                local label = Utils:Instance("TextLabel", {
+                    Size = UDim2.new(1, 0, 0, 16),
                     BackgroundTransparency = 1,
-                    Text = paragraph.Text,
-                    TextColor3 = Aurora.Theme.TextSecondary,
-                    TextSize = 11,
-                    Font = Enum.Font.Gotham,
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                    TextWrapped = true,
-                    Parent = ParagraphFrame
-                })
-                
-                paragraph.Frame = ParagraphFrame
-                
-                return paragraph
-            end
-            
-            -- Textbox Component
-            function section:CreateTextbox(config)
-                config = config or {}
-                
-                local textbox = {
-                    Name = config.Name or "Textbox",
-                    Default = config.Default or "",
-                    Placeholder = config.Placeholder or "Enter text...",
-                    Callback = config.Callback or function() end,
-                    Value = config.Default or ""
-                }
-                
-                local TextboxFrame = Utilities:Create("Frame", {
-                    Name = textbox.Name,
-                    Size = UDim2.new(1, 0, 0, 50),
-                    BackgroundTransparency = 1,
-                    Parent = SectionFrame
-                })
-                
-                local TextboxLabel = Utilities:Create("TextLabel", {
-                    Name = "Label",
-                    Size = UDim2.new(1, 0, 0, 18),
-                    BackgroundTransparency = 1,
-                    Text = textbox.Name,
-                    TextColor3 = Aurora.Theme.TextPrimary,
+                    Text = config.Name or "Input",
+                    TextColor3 = Aurora.Theme.TextMain,
                     TextSize = 12,
                     Font = Enum.Font.GothamMedium,
                     TextXAlignment = Enum.TextXAlignment.Left,
-                    Parent = TextboxFrame
+                    Parent = container
                 })
                 
-                local TextboxInput = Utilities:Create("TextBox", {
-                    Name = "Input",
-                    Size = UDim2.new(1, 0, 0, 28),
-                    Position = UDim2.new(0, 0, 0, 22),
-                    BackgroundColor3 = Aurora.Theme.BackgroundTertiary,
-                    Text = textbox.Default,
+                local input = Utils:Instance("TextBox", {
+                    Size = UDim2.new(1, 0, 0, 26),
+                    Position = UDim2.new(0, 0, 0, 20),
+                    BackgroundColor3 = Aurora.Theme.BgInput,
+                    Text = config.Default or "",
+                    PlaceholderText = config.Placeholder or "",
                     PlaceholderColor3 = Aurora.Theme.TextMuted,
-                    TextColor3 = Aurora.Theme.TextPrimary,
+                    TextColor3 = Aurora.Theme.TextMain,
                     TextSize = 11,
                     Font = Enum.Font.Gotham,
-                    PlaceholderText = textbox.Placeholder,
-                    Parent = TextboxFrame
-                }, {
-                    Utilities:CreateCorner(6),
-                    Utilities:CreateStroke(Aurora.Theme.Border, 1, 0)
+                    Parent = container
                 })
+                Utils:Corner(6).Parent = input
+                Utils:Stroke(Aurora.Theme.Border).Parent = input
                 
-                TextboxInput.Focused:Connect(function()
-                    Utilities:Tween(TextboxInput, {BackgroundColor3 = Aurora.Theme.BackgroundAccent}, 0.15)
-                    Utilities:Tween(TextboxInput:FindFirstChildOfClass("UIStroke"), {Color = Aurora.Theme.Accent}, 0.15)
+                input.Focused:Connect(function()
+                    Utils:Tween(input, {BackgroundColor3 = Aurora.Theme.BgHover})
+                    Utils:Tween(input:FindFirstChildOfClass("UIStroke"), {Color = Aurora.Theme.Accent})
                 end)
                 
-                TextboxInput.FocusLost:Connect(function(enterPressed)
-                    Utilities:Tween(TextboxInput, {BackgroundColor3 = Aurora.Theme.BackgroundTertiary}, 0.15)
-                    Utilities:Tween(TextboxInput:FindFirstChildOfClass("UIStroke"), {Color = Aurora.Theme.Border}, 0.15)
-                    
-                    textbox.Value = TextboxInput.Text
-                    textbox.Callback(TextboxInput.Text, enterPressed)
+                input.FocusLost:Connect(function(enter)
+                    Utils:Tween(input, {BackgroundColor3 = Aurora.Theme.BgInput})
+                    Utils:Tween(input:FindFirstChildOfClass("UIStroke"), {Color = Aurora.Theme.Border})
+                    textbox.Value = input.Text
+                    if config.Callback then config.Callback(input.Text, enter) end
                 end)
                 
-                textbox.Frame = TextboxFrame
-                textbox.Input = TextboxInput
-                
+                textbox.Input = input
                 return textbox
             end
             
-            -- Color Picker Component
-            function section:CreateColorPicker(config)
+            -- ColorPicker
+            function section:ColorPicker(config)
                 config = config or {}
+                local picker = {Value = config.Default or Color3.fromRGB(255, 255, 255), IsOpen = false}
                 
-                local colorPicker = {
-                    Name = config.Name or "Color Picker",
-                    Default = config.Default or Color3.fromRGB(255, 255, 255),
-                    Callback = config.Callback or function() end,
-                    Value = config.Default or Color3.fromRGB(255, 255, 255),
-                    IsOpen = false
-                }
-                
-                local ColorFrame = Utilities:Create("Frame", {
-                    Name = colorPicker.Name,
-                    Size = UDim2.new(1, 0, 0, 32),
+                local container = Utils:Instance("Frame", {
+                    Size = UDim2.new(1, 0, 0, 28),
                     BackgroundTransparency = 1,
-                    Parent = SectionFrame
+                    Parent = frame
                 })
                 
-                local ColorLabel = Utilities:Create("TextLabel", {
-                    Name = "Label",
+                local label = Utils:Instance("TextLabel", {
                     Size = UDim2.new(1, -60, 1, 0),
                     BackgroundTransparency = 1,
-                    Text = colorPicker.Name,
-                    TextColor3 = Aurora.Theme.TextPrimary,
+                    Text = config.Name or "Color",
+                    TextColor3 = Aurora.Theme.TextMain,
                     TextSize = 12,
                     Font = Enum.Font.GothamMedium,
                     TextXAlignment = Enum.TextXAlignment.Left,
-                    Parent = ColorFrame
+                    Parent = container
                 })
                 
-                local ColorPreview = Utilities:Create("TextButton", {
-                    Name = "Preview",
-                    Size = UDim2.new(0, 50, 0, 26),
+                local preview = Utils:Instance("TextButton", {
+                    Size = UDim2.new(0, 50, 0, 24),
                     Position = UDim2.new(1, -55, 0.5, 0),
                     AnchorPoint = Vector2.new(0, 0.5),
-                    BackgroundColor3 = colorPicker.Default,
+                    BackgroundColor3 = picker.Value,
                     Text = "",
-                    Parent = ColorFrame
-                }, {
-                    Utilities:CreateCorner(6),
-                    Utilities:CreateStroke(Aurora.Theme.Border, 1, 0)
+                    Parent = container
                 })
+                Utils:Corner(6).Parent = preview
+                Utils:Stroke(Aurora.Theme.Border).Parent = preview
                 
-                -- Color Picker Popup
-                local ColorPopup = Utilities:Create("Frame", {
-                    Name = "Popup",
-                    Size = UDim2.new(0, 200, 0, 180),
-                    Position = UDim2.new(1, -205, 0, 36),
-                    BackgroundColor3 = Aurora.Theme.BackgroundSecondary,
+                local popup = Utils:Instance("Frame", {
+                    Size = UDim2.new(0, 180, 0, 160),
+                    Position = UDim2.new(1, -185, 1, 4),
+                    BackgroundColor3 = Aurora.Theme.BgPanel,
                     Visible = false,
-                    ZIndex = 100,
-                    Parent = ColorFrame
-                }, {
-                    Utilities:CreateCorner(8),
-                    Utilities:CreateStroke(Aurora.Theme.Border, 1, 0)
+                    ZIndex = 10,
+                    Parent = container
                 })
+                Utils:Corner(8).Parent = popup
+                Utils:Stroke(Aurora.Theme.Border).Parent = popup
                 
-                -- HSV Color Selector
-                local ColorGradient = Utilities:Create("ImageLabel", {
-                    Name = "Gradient",
-                    Size = UDim2.new(1, -20, 0, 120),
+                local satVal = Utils:Instance("ImageLabel", {
+                    Size = UDim2.new(1, -20, 0, 100),
                     Position = UDim2.new(0, 10, 0, 10),
                     BackgroundColor3 = Color3.new(1, 0, 0),
                     Image = "rbxassetid://4155801252",
-                    Parent = ColorPopup
-                }, {
-                    Utilities:CreateCorner(6)
+                    Parent = popup
                 })
+                Utils:Corner(6).Parent = satVal
                 
-                -- Hue Slider
-                local HueSlider = Utilities:Create("ImageLabel", {
-                    Name = "Hue",
+                local hue = Utils:Instance("ImageLabel", {
                     Size = UDim2.new(1, -20, 0, 20),
-                    Position = UDim2.new(0, 10, 1, -40),
+                    Position = UDim2.new(0, 10, 1, -35),
                     BackgroundColor3 = Color3.new(1, 1, 1),
                     Image = "rbxassetid://3570695787",
-                    Parent = ColorPopup
-                }, {
-                    Utilities:CreateCorner(6)
+                    Parent = popup
                 })
+                Utils:Corner(6).Parent = hue
                 
-                -- Color picking logic
-                local function updateColor(hue, sat, val)
-                    local color = Color3.fromHSV(hue, sat, val)
-                    colorPicker.Value = color
-                    ColorPreview.BackgroundColor3 = color
-                    colorPicker.Callback(color)
+                local h, s, v = 0, 1, 1
+                local selectingSV = false
+                local selectingH = false
+                
+                local function update()
+                    local color = Color3.fromHSV(h, s, v)
+                    picker.Value = color
+                    preview.BackgroundColor3 = color
+                    satVal.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+                    if config.Callback then config.Callback(color) end
                 end
                 
-                local selectingColor = false
-                local selectingHue = false
-                
-                ColorGradient.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        selectingColor = true
-                    end
+                satVal.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then selectingSV = true end
                 end)
-                
-                ColorGradient.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        selectingColor = false
-                    end
+                satVal.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then selectingSV = false end
                 end)
-                
-                HueSlider.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        selectingHue = true
-                    end
+                hue.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then selectingH = true end
                 end)
-                
-                HueSlider.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        selectingHue = false
-                    end
+                hue.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then selectingH = false end
                 end)
-                
-                -- Handle color selection
-                local currentHue = 0
-                local currentSat = 1
-                local currentVal = 1
                 
                 UserInputService.InputChanged:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseMovement then
-                        if selectingColor then
-                            local relX = math.clamp((input.Position.X - ColorGradient.AbsolutePosition.X) / ColorGradient.AbsoluteSize.X, 0, 1)
-                            local relY = math.clamp((input.Position.Y - ColorGradient.AbsolutePosition.Y) / ColorGradient.AbsoluteSize.Y, 0, 1)
-                            currentSat = relX
-                            currentVal = 1 - relY
-                            updateColor(currentHue, currentSat, currentVal)
-                        elseif selectingHue then
-                            local relX = math.clamp((input.Position.X - HueSlider.AbsolutePosition.X) / HueSlider.AbsoluteSize.X, 0, 1)
-                            currentHue = relX
-                            ColorGradient.BackgroundColor3 = Color3.fromHSV(currentHue, 1, 1)
-                            updateColor(currentHue, currentSat, currentVal)
+                        if selectingSV then
+                            local rx = math.clamp((input.Position.X - satVal.AbsolutePosition.X) / satVal.AbsoluteSize.X, 0, 1)
+                            local ry = math.clamp((input.Position.Y - satVal.AbsolutePosition.Y) / satVal.AbsoluteSize.Y, 0, 1)
+                            s, v = rx, 1 - ry
+                            update()
+                        elseif selectingH then
+                            h = math.clamp((input.Position.X - hue.AbsolutePosition.X) / hue.AbsoluteSize.X, 0, 1)
+                            update()
                         end
                     end
                 end)
                 
-                ColorPreview.MouseButton1Click:Connect(function()
-                    colorPicker.IsOpen = not colorPicker.IsOpen
-                    ColorPopup.Visible = colorPicker.IsOpen
+                preview.MouseButton1Click:Connect(function()
+                    picker.IsOpen = not picker.IsOpen
+                    popup.Visible = picker.IsOpen
+                    if picker.IsOpen then
+                        container.Size = UDim2.new(1, 0, 0, 195)
+                    else
+                        container.Size = UDim2.new(1, 0, 0, 28)
+                    end
                 end)
                 
-                colorPicker.Frame = ColorFrame
+                return picker
+            end
+            
+            -- Paragraph
+            function section:Paragraph(config)
+                config = config or {}
                 
-                return colorPicker
+                local para = Utils:Instance("Frame", {
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    BackgroundColor3 = Aurora.Theme.BgPanel,
+                    BackgroundTransparency = 0.5,
+                    Parent = frame
+                })
+                Utils:Corner(6).Parent = para
+                Utils:Padding(10, 10, 10, 10).Parent = para
+                
+                if config.Title then
+                    local title = Utils:Instance("TextLabel", {
+                        Size = UDim2.new(1, 0, 0, 16),
+                        BackgroundTransparency = 1,
+                        Text = config.Title,
+                        TextColor3 = Aurora.Theme.Cyan,
+                        TextSize = 12,
+                        Font = Enum.Font.GothamBold,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        Parent = para
+                    })
+                end
+                
+                local text = Utils:Instance("TextLabel", {
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    BackgroundTransparency = 1,
+                    Text = config.Text or "",
+                    TextColor3 = Aurora.Theme.TextSub,
+                    TextSize = 11,
+                    Font = Enum.Font.Gotham,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    TextWrapped = true,
+                    Parent = para
+                })
+                
+                return para
             end
             
             return section
@@ -1999,172 +1339,129 @@ function Aurora:CreateWindow(config)
         return tab
     end
     
-    -- Select Tab Function
+    -- Select Tab
     function window:SelectTab(tab)
-        -- Deselect current tab
-        if window.CurrentTab then
-            Utilities:Tween(window.CurrentTab.Button, {BackgroundTransparency = 0.5})
-            window.CurrentTab.Button:FindFirstChild("Name").TextColor3 = Aurora.Theme.TextSecondary
-            window.CurrentTab.Button:FindFirstChild("Icon").TextColor3 = Aurora.Theme.TextSecondary
-            window.CurrentTab.Content.Visible = false
+        if self.CurrentTab then
+            Utils:Tween(self.CurrentTab.Button, {BackgroundTransparency = 0.5})
+            self.CurrentTab.Button:FindFirstChild("TextLabel").TextColor3 = Aurora.Theme.TextSub
+            self.CurrentTab.Content.Visible = false
         end
         
-        -- Select new tab
-        window.CurrentTab = tab
-        Utilities:Tween(tab.Button, {BackgroundTransparency = 0})
-        tab.Button:FindFirstChild("Name").TextColor3 = Color3.new(1, 1, 1)
-        tab.Button:FindFirstChild("Icon").TextColor3 = Aurora.Theme.AccentSecondary
+        self.CurrentTab = tab
+        Utils:Tween(tab.Button, {BackgroundTransparency = 0})
+        tab.Button:FindFirstChild("TextLabel").TextColor3 = Aurora.Theme.TextMain
         tab.Content.Visible = true
     end
     
-    -- Notification System
+    -- Notify
     function window:Notify(config)
         config = config or {}
+        local types = {info = Aurora.Theme.Cyan, success = Aurora.Theme.Green, warning = Aurora.Theme.Orange, error = Aurora.Theme.Red}
+        local color = types[config.Type] or Aurora.Theme.Cyan
         
-        local notification = {
-            Title = config.Title or "Notification",
-            Content = config.Content or "Notification content",
-            Duration = config.Duration or 5,
-            Type = config.Type or "info" -- info, success, warning, error
-        }
-        
-        local typeColors = {
-            info = Aurora.Theme.AccentSecondary,
-            success = Aurora.Theme.AccentSuccess,
-            warning = Aurora.Theme.AccentWarning,
-            error = Aurora.Theme.AccentDanger
-        }
-        
-        local NotificationContainer = Utilities:Create("Frame", {
-            Name = "Notification",
-            Size = UDim2.new(0, 300, 0, 70),
-            Position = UDim2.new(1, -320, 1, 0),
+        local notif = Utils:Instance("Frame", {
+            Size = UDim2.new(0, 280, 0, 60),
+            Position = UDim2.new(1, 0, 1, -80),
             AnchorPoint = Vector2.new(0, 1),
-            BackgroundColor3 = Aurora.Theme.BackgroundSecondary,
-            Parent = ScreenGui
-        }, {
-            Utilities:CreateCorner(8),
-            Utilities:CreateStroke(typeColors[notification.Type], 2, 0)
+            BackgroundColor3 = Aurora.Theme.BgCard,
+            Parent = screen
         })
+        Utils:Corner(8).Parent = notif
+        Utils:Stroke(color, 2).Parent = notif
         
-        local TitleLabel = Utilities:Create("TextLabel", {
-            Name = "Title",
-            Size = UDim2.new(1, -20, 0, 20),
-            Position = UDim2.new(0, 15, 0, 10),
+        local title = Utils:Instance("TextLabel", {
+            Size = UDim2.new(1, -20, 0, 18),
+            Position = UDim2.new(0, 12, 0, 10),
             BackgroundTransparency = 1,
-            Text = notification.Title,
-            TextColor3 = typeColors[notification.Type],
+            Text = config.Title or "Notification",
+            TextColor3 = color,
             TextSize = 13,
             Font = Enum.Font.GothamBold,
             TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = NotificationContainer
+            Parent = notif
         })
         
-        local ContentLabel = Utilities:Create("TextLabel", {
-            Name = "Content",
-            Size = UDim2.new(1, -20, 0, 30),
-            Position = UDim2.new(0, 15, 0, 30),
+        local content = Utils:Instance("TextLabel", {
+            Size = UDim2.new(1, -20, 0, 20),
+            Position = UDim2.new(0, 12, 1, -30),
             BackgroundTransparency = 1,
-            Text = notification.Content,
-            TextColor3 = Aurora.Theme.TextSecondary,
+            Text = config.Content or "",
+            TextColor3 = Aurora.Theme.TextSub,
             TextSize = 11,
             Font = Enum.Font.Gotham,
             TextXAlignment = Enum.TextXAlignment.Left,
-            TextWrapped = true,
-            Parent = NotificationContainer
+            TextTruncate = Enum.TextTruncate.AtEnd,
+            Parent = notif
         })
         
-        -- Progress Bar
-        local ProgressBar = Utilities:Create("Frame", {
-            Name = "Progress",
-            Size = UDim2.new(1, 0, 0, 3),
-            Position = UDim2.new(0, 0, 1, -3),
-            BackgroundColor3 = typeColors[notification.Type],
-            Parent = NotificationContainer
-        }, {
-            Utilities:CreateCorner(2)
+        local progress = Utils:Instance("Frame", {
+            Size = UDim2.new(1, 0, 0, 2),
+            Position = UDim2.new(0, 0, 1, -2),
+            BackgroundColor3 = color,
+            Parent = notif
         })
+        Utils:Corner(1).Parent = progress
         
-        -- Slide in animation
-        local targetY = 20
-        local yPos = 120
-        for _, existing in pairs(ScreenGui:GetChildren()) do
-            if existing.Name == "Notification" and existing ~= NotificationContainer then
-                yPos = yPos + 80
+        local yPos = 90
+        for _, n in pairs(screen:GetChildren()) do
+            if n ~= notif and n.Name == "" and n.Size.X.Offset == 280 then
+                yPos = yPos + 70
             end
         end
         
-        NotificationContainer.Position = UDim2.new(1, 0, 1, -yPos)
-        Utilities:Tween(NotificationContainer, {Position = UDim2.new(1, -320, 1, -yPos)}, 0.4)
+        Utils:Tween(notif, {Position = UDim2.new(1, -300, 1, -yPos)}, 0.3)
         
-        -- Progress animation
-        spawn(function()
-            local startTime = tick()
-            while tick() - startTime < notification.Duration do
-                local progress = 1 - ((tick() - startTime) / notification.Duration)
-                ProgressBar.Size = UDim2.new(progress, 0, 0, 3)
-                wait(0.03)
+        task.spawn(function()
+            local dur = config.Duration or 4
+            local start = tick()
+            while tick() - start < dur do
+                local p = 1 - ((tick() - start) / dur)
+                progress.Size = UDim2.new(p, 0, 0, 2)
+                task.wait(0.03)
             end
         end)
         
-        -- Auto dismiss
-        delay(notification.Duration, function()
-            Utilities:Tween(NotificationContainer, {Position = UDim2.new(1, 50, 1, -yPos)}, 0.4)
-            wait(0.4)
-            NotificationContainer:Destroy()
+        task.delay(config.Duration or 4, function()
+            Utils:Tween(notif, {Position = UDim2.new(1, 50, 1, -yPos)}, 0.3)
+            task.wait(0.3)
+            notif:Destroy()
         end)
         
-        return notification
+        return notif
     end
     
     return window
 end
 
--- Executor Info Display Component
-function Aurora:GetExecutorCard()
-    local executorInfo = Utilities:GetExecutorInfo()
-    local userInfo = Utilities:GetUserInfo()
-    
-    local text = string.format([[
-═══════════════════════════════════════
-           AURORA LIBRARY INFO
-═══════════════════════════════════════
+-- Get Info Card
+function Aurora:Info()
+    local user = Players.LocalPlayer
+    local exec = Utils:ExecutorInfo()
+    return string.format([[
+====================================
+        AURORA LIBRARY v%s
+====================================
 
-👤 USER INFORMATION
-   Username: %s
-   Display Name: %s
-   User ID: %d
-   Account Age: %d days
-   Membership: %s
+USER INFO
+  Username: %s
+  Display: %s
+  ID: %d
+  Age: %d days
+  Membership: %s
 
-⚡ EXECUTOR INFORMATION
-   Name: %s
-   Version: %s
-   Capabilities: %d detected
+EXECUTOR INFO
+  Name: %s
+  Version: %s
+  Capabilities: %d
 
-📊 SYSTEM
-   Date: %s
-   Time: %s
+SYSTEM
+  Date: %s
+  Time: %s
 
-═══════════════════════════════════════
-    Version: %s | Learning Purpose Only
-═══════════════════════════════════════
-    ]],
-        userInfo.Username,
-        userInfo.DisplayName,
-        userInfo.UserId,
-        userInfo.AccountAgeDays,
-        userInfo.Membership,
-        executorInfo.Name,
-        executorInfo.Version,
-        #executorInfo.Capabilities,
-        Utilities:GetDate(),
-        Utilities:GetTime(),
-        Aurora.Version
-    )
-    
-    return text
+====================================
+     For Learning Purposes Only
+====================================
+]], self.Version, user.Name, user.DisplayName, user.UserId, math.floor(user.AccountAge / 86400), user.MembershipType.Name, exec.Name, exec.Version, #exec.Caps, Utils:Date(), Utils:Time())
 end
 
--- Return Library
 return Aurora
