@@ -209,8 +209,7 @@ function Aurora.LoadingScreen(options)
         Text = "MODERN UI LIBRARY",
         TextColor3 = Theme.TextMuted,
         TextSize = 10,
-        Font = Enum.Font.GothamBold,
-        LetterSpacing = 3
+        Font = Enum.Font.GothamBold
     })
 
     -- Progress bar
